@@ -3,12 +3,10 @@
 // IMPORTANT: This code is for Node.js environment (Vercel's backend).
 
 export default async function handler(req, res) {
-    // Only allow POST requests
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // Get the secret API key from Vercel's environment variables
     const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     if (!GOOGLE_API_KEY) {
         return res.status(500).json({ error: 'API key not configured on the server.' });
@@ -34,10 +32,35 @@ export default async function handler(req, res) {
         }
         return res.status(200).json(response);
     } catch (error) {
-        console.error('Error processing API request:', error);
+        console.error('Error processing API request:', error.message);
         return res.status(500).json({ error: 'An internal server error occurred.', details: error.message });
     }
 }
+
+async function apiFetch(url, payload) {
+    const apiResponse = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!apiResponse.ok) {
+        let errorText = `Google API responded with status ${apiResponse.status}`;
+        try {
+            // Try to parse the error response as JSON, which is the common case
+            const errorData = await apiResponse.json();
+            errorText += `: ${JSON.stringify(errorData)}`;
+        } catch (e) {
+            // If it's not JSON (e.g., HTML error page), get the raw text
+            errorText += ` and the response was not valid JSON. Response body: ${await apiResponse.text()}`;
+        }
+        console.error("Google API Error:", errorText);
+        throw new Error(errorText);
+    }
+    
+    return apiResponse.json();
+}
+
 
 async function handleImageGeneration(body, apiKey, baseUrl) {
     const {
@@ -49,12 +72,12 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
 
     let backgroundPrompt = "";
     switch(photoConcept) {
-        case "Golden Hour Glow": backgroundPrompt = " bathed in the warm, soft light of the golden hour at sunset, creating beautiful lens flares"; break;
-        case "Retro Analog Film": backgroundPrompt = " with the aesthetic of a 90s analog film photo, slightly grainy, with authentic color saturation and light leaks"; break;
-        case "Cyberpunk Nightscape": backgroundPrompt = " against a futuristic cyberpunk city background at night, with vibrant neon lights and reflections on wet streets"; break;
-        case "Cozy Coffee Shop": backgroundPrompt = " inside a warm and cozy coffee shop, with soft indoor lighting, books, and plants in the background"; break;
-        case "Nature Explorer": backgroundPrompt = " in a beautiful natural landscape like a lush forest or near majestic mountains, with dynamic natural lighting"; break;
-        case "Studio Minimalis": backgroundPrompt = " with a clean, minimalist studio background in a solid neutral color (light gray, beige), with soft, even lighting"; break;
+        case "Golden Hour Glow": backgroundPrompt = " bathed in the warm, soft light of the golden hour at sunset"; break;
+        case "Retro Analog Film": backgroundPrompt = " with the aesthetic of a 90s analog film photo, slightly grainy"; break;
+        case "Cyberpunk Nightscape": backgroundPrompt = " against a futuristic cyberpunk city background at night, with vibrant neon lights"; break;
+        case "Cozy Coffee Shop": backgroundPrompt = " inside a warm and cozy coffee shop"; break;
+        case "Nature Explorer": backgroundPrompt = " in a beautiful natural landscape like a lush forest"; break;
+        case "Studio Minimalis": backgroundPrompt = " with a clean, minimalist studio background"; break;
     }
     if (backgroundOption === 'kustom' && customBackground) {
         backgroundPrompt = ` with a background of ${customBackground}`;
@@ -64,12 +87,12 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
     let promptText;
 
     if (faceImage) {
-        promptText = `CRITICAL PRIORITY: Use the face from the FIRST provided image (face reference) and accurately place it onto a ${modelGender} Indonesian model. Ensure a high degree of facial similarity. SECOND, dress the model in the product (${productName}, type: ${productType}) from the SECOND provided image (product image). The product must be clearly visible. The photo style is '${photoConcept}'${backgroundPrompt}. Create a high-resolution, 9:16 aspect ratio, magazine-quality fashion photograph.`;
+        promptText = `CRITICAL PRIORITY: Use the face from the FIRST provided image (face reference) and accurately place it onto a ${modelGender} Indonesian model. Ensure a high degree of facial similarity. SECOND, dress the model in the product (${productName}, type: ${productType}) from the SECOND provided image (product image). The photo style is '${photoConcept}'${backgroundPrompt}. Create a high-resolution, 9:16 aspect ratio, magazine-quality photograph.`;
         parts.push({ text: promptText });
         parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } });
         parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
     } else {
-        promptText = `Create a high-resolution, 9:16 aspect ratio, magazine-quality fashion photograph. A ${modelGender} Indonesian model is wearing the product (${productName}, type: ${productType}) from the provided image. The product from the image must be clearly and accurately visible on the model. The photo style is '${photoConcept}'${backgroundPrompt}.`;
+        promptText = `Create a high-resolution, 9:16 aspect ratio fashion photograph. A ${modelGender} Indonesian model is wearing the product (${productName}, type: ${productType}) from the provided image. The product must be clearly visible. The photo style is '${photoConcept}'${backgroundPrompt}.`;
         parts.push({ text: promptText });
         parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
     }
@@ -79,19 +102,7 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
         generationConfig: { responseModalities: ['IMAGE'] }
     };
     
-    const apiResponse = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!apiResponse.ok) {
-        const errorData = await apiResponse.json();
-        console.error("Google API Error:", errorData);
-        throw new Error(`Google API responded with status ${apiResponse.status}`);
-    }
-
-    const result = await apiResponse.json();
+    const result = await apiFetch(url, payload);
     const base64Image = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
     if (!base64Image) {
@@ -121,11 +132,7 @@ async function handleTextGeneration(body, apiKey, baseUrl) {
     `;
 
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
-    const apiResponse = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
-    if (!apiResponse.ok) throw new Error(`Google API responded with status ${apiResponse.status}`);
-
-    const result = await apiResponse.json();
+    const result = await apiFetch(url, payload);
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if(!text) throw new Error('Text generation failed, no text data received from API.');
@@ -170,11 +177,7 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
         model: "gemini-2.5-flash-preview-tts"
     };
     
-    const apiResponse = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
-    if (!apiResponse.ok) throw new Error(`Google API responded with status ${apiResponse.status}`);
-
-    const result = await apiResponse.json();
+    const result = await apiFetch(url, payload);
     const part = result?.candidates?.[0]?.content?.parts?.[0];
     
     if (!part?.inlineData?.data) {
@@ -183,19 +186,3 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
     
     return { audioData: part.inlineData.data, mimeType: "audio/wav" };
 }
-
-Cara Deploy ke Vercel (5 Langkah Mudah)
- * Siapkan Proyek Anda:
-   * Buat sebuah folder baru di komputer Anda (misalnya, ai-content-app).
-   * Di dalam folder itu, simpan file pertama sebagai index.html.
-   * Buat folder baru bernama api.
-   * Di dalam folder api itu, simpan file kedua sebagai generate.js.
-   * Struktur folder Anda sekarang harus seperti ini:
-     ai-content-app/
-├── index.html
-└── api/
-    └── generate.js
-
-
-
-
