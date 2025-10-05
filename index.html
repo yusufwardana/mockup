@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Product Content Designer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .step-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .custom-file-upload {
+            border: 2px dashed #cbd5e1;
+            display: inline-block;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .custom-file-upload:hover {
+            border-color: #3498db;
+            background-color: #f8fafc;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #e2e8f0;
+            border: none;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            opacity: 1;
+            background-color: #cbd5e1;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 140px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -70px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        input[type="radio"]:checked + label {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            font-weight: 600;
+        }
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        button:disabled:hover {
+            background-color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-900">AI Product Content Designer</h1>
+            <p class="text-lg text-gray-600 mt-2">Buat konten promosi produk Anda dengan cepat dan mudah.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Kolom Input -->
+            <div class="space-y-6">
+                 <!-- Step 1: Detail Produk -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">Langkah 1: Detail Produk</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="productName" placeholder="Nama Produk (mis: Aurora Hoodie)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <select id="productType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="" disabled selected>Pilih Jenis Produk</option>
+                            <option value="hoodie">Hoodie</option>
+                            <option value="kaos">Kaos</option>
+                            <option value="jaket">Jaket</option>
+                            <option value="celana">Celana</option>
+                            <option value="topi">Topi</option>
+                            <option value="sepatu">Sepatu</option>
+                        </select>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-2">Unggah foto produk jadi atau mockup desain Anda.</p>
+                            <label class="custom-file-upload w-full">
+                                <input type="file" id="productImage" class="hidden" accept="image/*">
+                                <span id="productImageName">📤 Unggah Gambar Produk / Mockup</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 2: Konsep Visual -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                     <h2 class="text-xl font-semibold mb-4 text-gray-700">Langkah 2: Konsep Visual Dinamis</h2>
+                     <div class="space-y-3">
+                        <p class="font-medium">Pilih Tema Foto:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden" checked><label for="c1" class="block text-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Golden Hour Glow</label></div>
+                            <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden"><label for="c2" class="block text-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Retro Analog Film</label></div>
+                            <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden"><label for="c3" class="block text-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Cyberpunk Night</label></div>
+                            <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden"><label for="c4" class="block text-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Cozy Coffee Shop</label></div>
+                            <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden"><label for="c5" class="block text-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Nature Explorer</label></div>
+                            <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden"><label for="c6" class="block text-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Studio Minimalis</label></div>
+                        </div>
+                        <div class="flex pt-4 space-x-4">
+                            <div class="flex-1">
+                                <p class="font-medium mb-2">Model:</p>
+                                <div><input type="radio" name="modelGender" value="Pria" id="m1" class="hidden" checked><label for="m1" class="block text-center p-2 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Pria</label></div>
+                                <div><input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden"><label for="m2" class="block mt-2 text-center p-2 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">Wanita</label></div>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium mb-2">Rasio Gambar:</p>
+                                <p class="p-2 border rounded-lg text-center bg-gray-100">9:16 (Potret)</p>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+                 <!-- Step 3: Opsi Tambahan -->
+                <div class="step-card bg-white p-6 rounded-xl shadow-md">
+                     <h2 class="text-xl font-semibold mb-4 text-gray-700">Langkah 3: Opsi Tambahan</h2>
+                     <div class="space-y-4">
+                        <div>
+                             <p class="font-medium mb-2">Latar Belakang:</p>
+                             <div class="flex space-x-2">
+                                <div><input type="radio" name="background" value="bawaan" id="b1" class="hidden" checked><label for="b1" class="block text-center p-2 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors w-full">Sesuai Tema</label></div>
+                                <div><input type="radio" name="background" value="kustom" id="b2" class="hidden"><label for="b2" class="block text-center p-2 border rounded-lg cursor-pointer hover:bg-gray-100 transition-colors w-full">Kustom</label></div>
+                             </div>
+                             <input type="text" id="customBackground" placeholder="cth: di jalanan kota Tokyo saat malam hari" class="mt-2 w-full p-3 border border-gray-300 rounded-lg hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <p class="font-medium mb-2">Referensi Wajah (Opsional):</p>
+                            <label class="custom-file-upload w-full">
+                                <input type="file" id="faceImage" class="hidden" accept="image/*">
+                                <span id="faceImageName">🎭 Unggah Wajah Model</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-2">Gunakan foto wajah jelas & menghadap depan untuk hasil terbaik.</p>
+                        </div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Kolom Output -->
+            <div class="space-y-6">
+                <div id="outputContainer" class="bg-white p-6 rounded-xl shadow-md space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800">Hasil Generasi AI</h2>
+                        <div id="apiCreditCounter" class="text-lg font-semibold text-blue-600 bg-blue-100 px-4 py-2 rounded-full"></div>
+                    </div>
+                    
+                    <div>
+                        <button id="generateImageBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">1. 📸 Generate Foto (5 Kredit)</button>
+                        <div id="imageLoader" class="hidden justify-center items-center mt-4"><div class="loader"></div></div>
+                        <div id="imageResult" class="mt-4 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-96 bg-gray-100">
+                            <p class="text-gray-500">Foto produk akan muncul di sini</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button id="generateTextBtn" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300" disabled>2. 📝 Generate Konten (1 Kredit)</button>
+                        <div id="textLoader" class="hidden justify-center items-center mt-4"><div class="loader"></div></div>
+                        <div id="textResults" class="hidden mt-4 space-y-4">
+                            <div class="relative">
+                                <label class="font-semibold text-gray-700">Deskripsi TikTok:</label>
+                                <textarea id="tiktokCaption" rows="3" class="w-full p-3 mt-1 border rounded-lg bg-gray-50" readonly></textarea>
+                                <button onclick="copyToClipboard('tiktokCaption', this)" class="copy-btn tooltip"><span class="tooltiptext">Salin</span>📋</button>
+                            </div>
+                            <div class="relative">
+                                <label class="font-semibold text-gray-700">Teks Narasi (±20s):</label>
+                                <textarea id="promoNarrative" rows="4" class="w-full p-3 mt-1 border rounded-lg bg-gray-50" readonly></textarea>
+                                 <button onclick="copyToClipboard('promoNarrative', this)" class="copy-btn tooltip"><span class="tooltiptext">Salin</span>📋</button>
+                            </div>
+                             <div class="relative">
+                                <label class="font-semibold text-gray-700">Prompt untuk Video:</label>
+                                <textarea id="videoPrompt" rows="4" class="w-full p-3 mt-1 border rounded-lg bg-gray-50" readonly></textarea>
+                                 <button onclick="copyToClipboard('videoPrompt', this)" class="copy-btn tooltip"><span class="tooltiptext">Salin</span>📋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="generateMaleAudioBtn" class="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition duration-300" disabled>3. 🔊 Suara Pria (1 Kredit)</button>
+                            <button id="generateFemaleAudioBtn" class="w-full bg-pink-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-700 transition duration-300" disabled>4. 🔊 Suara Wanita (1 Kredit)</button>
+                        </div>
+                        <div id="audioLoader" class="hidden justify-center items-center mt-4"><div class="loader"></div></div>
+                        <div id="audioResults" class="mt-4 space-y-4">
+                            <div id="maleAudioContainer" class="hidden">
+                                <label class="font-semibold">Suara Pria:</label>
+                                <audio controls class="w-full mt-1"></audio>
+                            </div>
+                            <div id="femaleAudioContainer" class="hidden">
+                                <label class="font-semibold">Suara Wanita:</label>
+                                <audio controls class="w-full mt-1"></audio>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// --- UTILITY FUNCTIONS ---
+const getElement = (id) => document.getElementById(id);
+const querySelector = (selector) => document.querySelector(selector);
+
+// --- API KREDIT MANAJEMEN ---
+let apiCredits = 50;
+const creditCounter = getElement('apiCreditCounter');
+
+function updateCreditDisplay() {
+    creditCounter.textContent = `Kredit: ${apiCredits}`;
+}
+
+function checkAndDeductCredits(cost) {
+    if (apiCredits < cost) {
+        alert("Kredit Anda tidak mencukupi untuk melakukan tindakan ini.");
+        return false;
+    }
+    apiCredits -= cost;
+    updateCreditDisplay();
+    if(apiCredits <= 0) {
+        disableAllButtons();
+    }
+    return true;
+}
+
+function disableAllButtons() {
+    document.querySelectorAll('button[id^="generate"]').forEach(button => {
+        button.disabled = true;
+    });
+    alert("Kredit Anda telah habis. Harap muat ulang halaman untuk mencoba lagi.");
+}
+
+document.addEventListener('DOMContentLoaded', updateCreditDisplay);
+
+// --- FILE & DATA CONVERTERS ---
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+}
+
+function base64ToBlob(base64, mimeType) {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], {type: mimeType});
+}
+
+
+function copyToClipboard(elementId, button) {
+    const textArea = getElement(elementId);
+    textArea.select();
+    document.execCommand('copy');
+    const tooltipText = button.querySelector('.tooltiptext');
+    tooltipText.textContent = "Disalin!";
+    setTimeout(() => {
+        tooltipText.textContent = "Salin";
+    }, 2000);
+}
+
+
+// --- DOM EVENT LISTENERS ---
+document.querySelectorAll('input[name="background"]').forEach(elem => {
+    elem.addEventListener('change', (event) => {
+        getElement('customBackground').classList.toggle('hidden', event.target.value !== 'kustom');
+    });
+});
+
+getElement('productImage').addEventListener('change', function() {
+    getElement('productImageName').textContent = this.files.length > 0 ? `✔️ ${this.files[0].name}` : '📤 Unggah Gambar Produk / Mockup';
+});
+
+getElement('faceImage').addEventListener('change', function() {
+    getElement('faceImageName').textContent = this.files.length > 0 ? `✔️ ${this.files[0].name}` : '🎭 Unggah Wajah Model';
+});
+
+
+// --- API CALLS (to our own backend) ---
+const API_ROUTE = '/api/generate'; // The Vercel serverless function endpoint
+
+async function callApi(endpoint, body) {
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Something went wrong');
+    }
+
+    return response.json();
+}
+
+// --- MAIN LOGIC ---
+getElement('generateImageBtn').addEventListener('click', async () => {
+    if (!checkAndDeductCredits(5)) return;
+
+    const productName = getElement('productName').value;
+    const productType = getElement('productType').value;
+    const productImageFile = getElement('productImage').files[0];
+    const faceImageFile = getElement('faceImage').files[0];
+
+    if (!productName || !productType || !productImageFile) {
+        alert("Harap isi Nama Produk, pilih Jenis Produk, dan unggah Gambar Produk/Mockup.");
+        apiCredits += 5; updateCreditDisplay(); // Refund
+        return;
+    }
+
+    const imageResultDiv = getElement('imageResult');
+    const imageLoader = getElement('imageLoader');
+
+    imageLoader.style.display = 'flex';
+    imageResultDiv.innerHTML = '<p class="text-gray-500">Membuat foto produk...</p>';
+
+    try {
+        const photoConcept = querySelector('input[name="photoConcept"]:checked').value;
+        const modelGender = querySelector('input[name="modelGender"]:checked').value;
+        const backgroundOption = querySelector('input[name="background"]:checked').value;
+        const customBackground = getElement('customBackground').value;
+
+        const productImageBase64 = await fileToBase64(productImageFile);
+        let faceImageBase64 = null;
+        if (faceImageFile) {
+            faceImageBase64 = await fileToBase64(faceImageFile);
+        }
+
+        const payload = {
+            type: 'image',
+            productName, productType, photoConcept, modelGender, backgroundOption, customBackground,
+            productImage: {
+                base64: productImageBase64,
+                mimeType: productImageFile.type
+            },
+            faceImage: faceImageFile ? {
+                base64: faceImageBase64,
+                mimeType: faceImageFile.type
+            } : null,
+        };
+
+        const result = await callApi(API_ROUTE, payload);
+
+        if (result.base64Image) {
+            imageResultDiv.innerHTML = `<img src="data:image/png;base64,${result.base64Image}" class="w-full h-full object-contain rounded-lg">`;
+            getElement('generateTextBtn').disabled = false;
+        } else {
+             imageResultDiv.innerHTML = `<p class="text-red-500">${result.error || 'Gagal membuat gambar.'}</p>`;
+        }
+    } catch (error) {
+        console.error('Error generating image:', error);
+        imageResultDiv.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+    } finally {
+        imageLoader.style.display = 'none';
+    }
+});
+
+
+getElement('generateTextBtn').addEventListener('click', async () => {
+    if (!checkAndDeductCredits(1)) return;
+    
+    const productName = getElement('productName').value;
+    if (!productName) {
+        alert("Harap isi Nama Produk.");
+        apiCredits += 1; updateCreditDisplay(); // Refund
+        return;
+    }
+    
+    const textLoader = getElement('textLoader');
+    const textResultsDiv = getElement('textResults');
+    
+    textLoader.style.display = 'flex';
+    textResultsDiv.classList.add('hidden');
+
+    try {
+        const result = await callApi(API_ROUTE, { type: 'text', productName });
+
+        if (result.error) {
+             throw new Error(result.error);
+        }
+
+        getElement('tiktokCaption').value = result.caption || "Tidak dapat menghasilkan deskripsi.";
+        getElement('promoNarrative').value = result.narrative || "Tidak dapat menghasilkan narasi.";
+        getElement('videoPrompt').value = result.videoPrompt || "Tidak dapat menghasilkan prompt video.";
+
+        textResultsDiv.classList.remove('hidden');
+        getElement('generateMaleAudioBtn').disabled = false;
+        getElement('generateFemaleAudioBtn').disabled = false;
+
+    } catch (error) {
+        console.error('Error generating text:', error);
+        getElement('tiktokCaption').value = `Gagal: ${error.message}`;
+        getElement('promoNarrative').value = `Gagal: ${error.message}`;
+        getElement('videoPrompt').value = `Gagal: ${error.message}`;
+    } finally {
+        textLoader.style.display = 'none';
+    }
+});
+
+async function generateAudio(gender) {
+    if (!checkAndDeductCredits(1)) return;
+
+    const narrative = getElement('promoNarrative').value;
+    if (!narrative || narrative.startsWith("Tidak dapat") || narrative.startsWith("Gagal")) {
+        alert("Teks narasi tidak valid untuk diubah menjadi suara.");
+        apiCredits += 1; updateCreditDisplay(); // Refund
+        return;
+    }
+
+    const audioLoader = getElement('audioLoader');
+    audioLoader.style.display = 'flex';
+    
+    const containerId = `${gender}AudioContainer`;
+    const audioContainer = getElement(containerId);
+    audioContainer.classList.add('hidden');
+
+    try {
+        const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative });
+        if(result.error) throw new Error(result.error);
+        
+        const blob = base64ToBlob(result.audioData, result.mimeType);
+        const audioUrl = URL.createObjectURL(blob);
+            
+        const audioPlayer = audioContainer.querySelector('audio');
+        audioPlayer.src = audioUrl;
+        audioContainer.classList.remove('hidden');
+
+    } catch (error) {
+        console.error(`Error generating ${gender} audio:`, error);
+        alert(`Gagal membuat audio ${gender}: ${error.message}`);
+    } finally {
+        audioLoader.style.display = 'none';
+    }
+}
+
+
+getElement('generateMaleAudioBtn').addEventListener('click', () => generateAudio('male'));
+getElement('generateFemaleAudioBtn').addEventListener('click', () => generateAudio('female'));
+
+</script>
+</body>
+</html>
+
+
