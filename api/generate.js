@@ -3,9 +3,6 @@
 // IMPORTANT: This code is for Node.js environment (Vercel's backend).
 
 export default async function handler(req, res) {
-    // Log the incoming request body for debugging purposes
-    console.log("Received request body:", JSON.stringify(req.body, null, 2));
-
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -36,10 +33,8 @@ export default async function handler(req, res) {
         }
         return res.status(200).json(response);
     } catch (error) {
-        // Log the full error for server-side debugging
         console.error('Full error object:', error);
-        // Send a user-friendly error back to the frontend
-        return res.status(500).json({ error: 'Terjadi kesalahan saat berkomunikasi dengan Google AI.', details: error.message });
+        return res.status(500).json({ error: 'Terjadi kesalahan di backend.', details: error.message });
     }
 }
 
@@ -59,7 +54,6 @@ async function apiFetch(url, payload) {
             errorText += ` dan respons bukan JSON yang valid.`;
         }
         console.error("Google API Error:", errorText);
-        // Throw an error with a message that can be shown to the user
         throw new Error(errorText);
     }
     
@@ -68,11 +62,13 @@ async function apiFetch(url, payload) {
 
 
 async function handleImageGeneration(body, apiKey, baseUrl) {
-    const {
-        productName, productType, photoConcept, modelGender, backgroundOption,
-        customBackground, productImage, faceImage
-    } = body;
-    
+    // --- NEW: Input Validation Layer ---
+    const { productName, productType, productImage } = body;
+    if (!productName || !productType || !productImage || !productImage.base64) {
+        throw new Error("Data produk tidak lengkap. Pastikan nama, tipe, dan gambar produk telah terkirim.");
+    }
+
+    const { photoConcept, modelGender, backgroundOption, customBackground, faceImage } = body;
     const url = `${baseUrl}gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
 
     let backgroundPrompt = "";
@@ -91,7 +87,7 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
     const parts = [];
     let promptText;
 
-    if (faceImage) {
+    if (faceImage && faceImage.base64) {
         promptText = `CRITICAL PRIORITY: Use the face from the FIRST provided image (face reference) and accurately place it onto a ${modelGender} Indonesian model. Ensure a high degree of facial similarity. SECOND, dress the model in the product (${productName}, type: ${productType}) from the SECOND provided image (product image). The photo style is '${photoConcept}'${backgroundPrompt}. Create a high-resolution, 9:16 aspect ratio, magazine-quality photograph.`;
         parts.push({ text: promptText });
         parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } });
@@ -119,9 +115,13 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
 
 
 async function handleTextGeneration(body, apiKey, baseUrl) {
+    // --- NEW: Input Validation Layer ---
     const { productName } = body;
+    if (!productName) {
+        throw new Error("Nama produk tidak terkirim untuk generasi teks.");
+    }
+    
     const url = `${baseUrl}gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
     const prompt = `
         You are an expert TikTok affiliate marketer. Generate promotional content for a product named "${productName}".
         Follow this exact format with clear headers (CAPTION_TIKTOK, NARASI_PROMOSI, IDE_VIDEO) and no extra formatting.
@@ -160,9 +160,13 @@ async function handleTextGeneration(body, apiKey, baseUrl) {
 
 
 async function handleAudioGeneration(body, apiKey, baseUrl) {
+    // --- NEW: Input Validation Layer ---
     const { gender, narrative } = body;
+    if (!gender || !narrative) {
+        throw new Error("Data gender atau narasi tidak terkirim untuk generasi audio.");
+    }
+
     const url = `${baseUrl}gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-    
     let voiceStyle, voiceName;
     if (gender === 'male') {
         voiceStyle = "Read this in a relaxed and confident tone";
