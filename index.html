@@ -234,6 +234,10 @@
                             </div>
                         </div>
                     </div>
+                    <!-- NEW: Reset Button -->
+                    <div class="pt-4 border-t">
+                        <button id="resetBtn" class="w-full bg-gray-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-300">♻️ Mulai Lagi Untuk Produk Baru</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -242,7 +246,32 @@
 <script>
 // --- UTILITY FUNCTIONS ---
 const getElement = (id) => document.getElementById(id);
-const querySelector = (selector) => document.querySelector(selector);
+
+// --- DOM ELEMENT REFERENCES ---
+const allButtons = {
+    image: getElement('generateImageBtn'),
+    text: getElement('generateTextBtn'),
+    maleAudio: getElement('generateMaleAudioBtn'),
+    femaleAudio: getElement('generateFemaleAudioBtn'),
+    reset: getElement('resetBtn')
+};
+
+const allLoaders = {
+    image: getElement('imageLoader'),
+    text: getElement('textLoader'),
+    audio: getElement('audioLoader')
+};
+
+const allResults = {
+    image: getElement('imageResult'),
+    text: getElement('textResults'),
+    audio: getElement('audioResults')
+};
+
+const allFileNames = {
+    product: getElement('productImageName'),
+    face: getElement('faceImageName')
+};
 
 // --- API KREDIT MANAJEMEN ---
 let apiCredits = 50;
@@ -259,20 +288,15 @@ function checkAndDeductCredits(cost) {
     }
     apiCredits -= cost;
     updateCreditDisplay();
-    if(apiCredits <= 0) {
-        disableAllButtons();
+    if (apiCredits <= 0) {
+        Object.values(allButtons).forEach(btn => btn.disabled = true);
+        alert("Kredit Anda telah habis. Harap muat ulang halaman untuk mencoba lagi.");
     }
     return true;
 }
 
-function disableAllButtons() {
-    document.querySelectorAll('button[id^="generate"]').forEach(button => {
-        button.disabled = true;
-    });
-    alert("Kredit Anda telah habis. Harap muat ulang halaman untuk mencoba lagi.");
-}
-
 document.addEventListener('DOMContentLoaded', updateCreditDisplay);
+
 
 // --- FILE & DATA CONVERTERS ---
 function fileToBase64(file) {
@@ -294,7 +318,6 @@ function base64ToBlob(base64, mimeType) {
     return new Blob([byteArray], {type: mimeType});
 }
 
-
 function copyToClipboard(elementId, button) {
     const textArea = getElement(elementId);
     textArea.select();
@@ -306,7 +329,6 @@ function copyToClipboard(elementId, button) {
     }, 2000);
 }
 
-
 // --- DOM EVENT LISTENERS ---
 document.querySelectorAll('input[name="background"]').forEach(elem => {
     elem.addEventListener('change', (event) => {
@@ -315,23 +337,21 @@ document.querySelectorAll('input[name="background"]').forEach(elem => {
 });
 
 getElement('productImage').addEventListener('change', function() {
-    getElement('productImageName').textContent = this.files.length > 0 ? `✔️ ${this.files[0].name}` : '📤 Unggah Gambar Produk / Mockup';
+    allFileNames.product.textContent = this.files.length > 0 ? `✔️ ${this.files[0].name}` : '📤 Unggah Gambar Produk / Mockup';
 });
 
 getElement('faceImage').addEventListener('change', function() {
-    getElement('faceImageName').textContent = this.files.length > 0 ? `✔️ ${this.files[0].name}` : '🎭 Unggah Wajah Model';
+    allFileNames.face.textContent = this.files.length > 0 ? `✔️ ${this.files[0].name}` : '🎭 Unggah Wajah Model';
 });
 
 
 // --- API CALLS (to our own backend) ---
-const API_ROUTE = '/api/generate'; // The Vercel serverless function endpoint
+const API_ROUTE = '/api/generate';
 
 async function callApi(endpoint, body) {
     const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
     });
 
@@ -344,13 +364,12 @@ async function callApi(endpoint, body) {
 }
 
 // --- MAIN LOGIC ---
-getElement('generateImageBtn').addEventListener('click', async () => {
+allButtons.image.addEventListener('click', async () => {
     if (!checkAndDeductCredits(5)) return;
 
     const productName = getElement('productName').value;
     const productType = getElement('productType').value;
     const productImageFile = getElement('productImage').files[0];
-    const faceImageFile = getElement('faceImage').files[0];
 
     if (!productName || !productType || !productImageFile) {
         alert("Harap isi Nama Produk, pilih Jenis Produk, dan unggah Gambar Produk/Mockup.");
@@ -358,134 +377,143 @@ getElement('generateImageBtn').addEventListener('click', async () => {
         return;
     }
 
-    const imageResultDiv = getElement('imageResult');
-    const imageLoader = getElement('imageLoader');
-
-    imageLoader.style.display = 'flex';
-    imageResultDiv.innerHTML = '<p class="text-gray-500">Membuat foto produk...</p>';
+    allButtons.image.disabled = true;
+    allLoaders.image.style.display = 'flex';
+    allResults.image.innerHTML = '<p class="text-gray-500">Membuat foto produk...</p>';
 
     try {
-        const photoConcept = querySelector('input[name="photoConcept"]:checked').value;
-        const modelGender = querySelector('input[name="modelGender"]:checked').value;
-        const backgroundOption = querySelector('input[name="background"]:checked').value;
+        const photoConcept = document.querySelector('input[name="photoConcept"]:checked').value;
+        const modelGender = document.querySelector('input[name="modelGender"]:checked').value;
+        const backgroundOption = document.querySelector('input[name="background"]:checked').value;
         const customBackground = getElement('customBackground').value;
-
+        const faceImageFile = getElement('faceImage').files[0];
         const productImageBase64 = await fileToBase64(productImageFile);
         let faceImageBase64 = null;
-        if (faceImageFile) {
-            faceImageBase64 = await fileToBase64(faceImageFile);
-        }
+        if (faceImageFile) faceImageBase64 = await fileToBase64(faceImageFile);
 
         const payload = {
             type: 'image',
             productName, productType, photoConcept, modelGender, backgroundOption, customBackground,
-            productImage: {
-                base64: productImageBase64,
-                mimeType: productImageFile.type
-            },
-            faceImage: faceImageFile ? {
-                base64: faceImageBase64,
-                mimeType: faceImageFile.type
-            } : null,
+            productImage: { base64: productImageBase64, mimeType: productImageFile.type },
+            faceImage: faceImageFile ? { base64: faceImageBase64, mimeType: faceImageFile.type } : null,
         };
 
         const result = await callApi(API_ROUTE, payload);
 
         if (result.base64Image) {
-            imageResultDiv.innerHTML = `<img src="data:image/png;base64,${result.base64Image}" class="w-full h-full object-contain rounded-lg">`;
-            getElement('generateTextBtn').disabled = false;
+            allResults.image.innerHTML = `<img src="data:image/png;base64,${result.base64Image}" class="w-full h-full object-contain rounded-lg">`;
+            allButtons.text.disabled = false; // Unlock next step
         } else {
-             imageResultDiv.innerHTML = `<p class="text-red-500">${result.error || 'Gagal membuat gambar.'}</p>`;
+             allResults.image.innerHTML = `<p class="text-red-500">${result.error || 'Gagal membuat gambar.'}</p>`;
+             allButtons.image.disabled = false; // Allow retry on failure
         }
     } catch (error) {
         console.error('Error generating image:', error);
-        imageResultDiv.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+        allResults.image.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+        allButtons.image.disabled = false; // Allow retry on failure
     } finally {
-        imageLoader.style.display = 'none';
+        allLoaders.image.style.display = 'none';
     }
 });
 
 
-getElement('generateTextBtn').addEventListener('click', async () => {
+allButtons.text.addEventListener('click', async () => {
     if (!checkAndDeductCredits(1)) return;
     
     const productName = getElement('productName').value;
     if (!productName) {
-        alert("Harap isi Nama Produk.");
-        apiCredits += 1; updateCreditDisplay(); // Refund
+        alert("Nama Produk tidak ditemukan.");
         return;
     }
     
-    const textLoader = getElement('textLoader');
-    const textResultsDiv = getElement('textResults');
-    
-    textLoader.style.display = 'flex';
-    textResultsDiv.classList.add('hidden');
+    allButtons.text.disabled = true;
+    allLoaders.text.style.display = 'flex';
+    allResults.text.classList.add('hidden');
 
     try {
         const result = await callApi(API_ROUTE, { type: 'text', productName });
-
-        if (result.error) {
-             throw new Error(result.error);
-        }
-
+        if (result.error) throw new Error(result.error);
         getElement('tiktokCaption').value = result.caption || "Tidak dapat menghasilkan deskripsi.";
         getElement('promoNarrative').value = result.narrative || "Tidak dapat menghasilkan narasi.";
         getElement('videoPrompt').value = result.videoPrompt || "Tidak dapat menghasilkan prompt video.";
-
-        textResultsDiv.classList.remove('hidden');
-        getElement('generateMaleAudioBtn').disabled = false;
-        getElement('generateFemaleAudioBtn').disabled = false;
-
+        allResults.text.classList.remove('hidden');
+        allButtons.maleAudio.disabled = false; // Unlock next step
+        allButtons.femaleAudio.disabled = false; // Unlock next step
     } catch (error) {
         console.error('Error generating text:', error);
         getElement('tiktokCaption').value = `Gagal: ${error.message}`;
-        getElement('promoNarrative').value = `Gagal: ${error.message}`;
-        getElement('videoPrompt').value = `Gagal: ${error.message}`;
+        allButtons.text.disabled = false; // Allow retry on failure
     } finally {
-        textLoader.style.display = 'none';
+        allLoaders.text.style.display = 'none';
     }
 });
 
 async function generateAudio(gender) {
     if (!checkAndDeductCredits(1)) return;
+    const button = (gender === 'male') ? allButtons.maleAudio : allButtons.femaleAudio;
+    button.disabled = true;
 
     const narrative = getElement('promoNarrative').value;
     if (!narrative || narrative.startsWith("Tidak dapat") || narrative.startsWith("Gagal")) {
         alert("Teks narasi tidak valid untuk diubah menjadi suara.");
-        apiCredits += 1; updateCreditDisplay(); // Refund
+        apiCredits += 1; updateCreditDisplay();
+        button.disabled = false;
         return;
     }
 
-    const audioLoader = getElement('audioLoader');
-    audioLoader.style.display = 'flex';
-    
-    const containerId = `${gender}AudioContainer`;
-    const audioContainer = getElement(containerId);
-    audioContainer.classList.add('hidden');
+    allLoaders.audio.style.display = 'flex';
+    const container = getElement(`${gender}AudioContainer`);
+    container.classList.add('hidden');
 
     try {
         const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative });
         if(result.error) throw new Error(result.error);
-        
         const blob = base64ToBlob(result.audioData, result.mimeType);
         const audioUrl = URL.createObjectURL(blob);
-            
-        const audioPlayer = audioContainer.querySelector('audio');
-        audioPlayer.src = audioUrl;
-        audioContainer.classList.remove('hidden');
-
+        container.querySelector('audio').src = audioUrl;
+        container.classList.remove('hidden');
     } catch (error) {
         console.error(`Error generating ${gender} audio:`, error);
         alert(`Gagal membuat audio ${gender}: ${error.message}`);
+        button.disabled = false; // Allow retry
     } finally {
-        audioLoader.style.display = 'none';
+        allLoaders.audio.style.display = 'none';
     }
 }
 
+allButtons.maleAudio.addEventListener('click', () => generateAudio('male'));
+allButtons.femaleAudio.addEventListener('click', () => generateAudio('female'));
 
-getElement('generateMaleAudioBtn').addEventListener('click', () => generateAudio('male'));
-getElement('generateFemaleAudioBtn').addEventListener('click', () => generateAudio('female'));
+
+// --- NEW: Reset Functionality ---
+allButtons.reset.addEventListener('click', () => {
+    // Clear outputs
+    allResults.image.innerHTML = '<p class="text-gray-500">Foto produk akan muncul di sini</p>';
+    allResults.text.classList.add('hidden');
+    getElement('tiktokCaption').value = '';
+    getElement('promoNarrative').value = '';
+    getElement('videoPrompt').value = '';
+    getElement('maleAudioContainer').classList.add('hidden');
+    getElement('femaleAudioContainer').classList.add('hidden');
+    getElement('maleAudioContainer').querySelector('audio').src = '';
+    getElement('femaleAudioContainer').querySelector('audio').src = '';
+    
+    // Clear inputs
+    getElement('productName').value = '';
+    getElement('productType').value = '';
+    getElement('productImage').value = '';
+    getElement('faceImage').value = '';
+    allFileNames.product.textContent = '📤 Unggah Gambar Produk / Mockup';
+    allFileNames.face.textContent = '🎭 Unggah Wajah Model';
+
+    // Reset button states
+    allButtons.image.disabled = false;
+    allButtons.text.disabled = true;
+    allButtons.maleAudio.disabled = true;
+    allButtons.femaleAudio.disabled = true;
+
+    console.log("Workflow has been reset.");
+});
 
 </script>
 </body>
