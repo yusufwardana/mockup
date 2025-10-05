@@ -3,13 +3,17 @@
 // IMPORTANT: This code is for Node.js environment (Vercel's backend).
 
 export default async function handler(req, res) {
+    // Log the incoming request body for debugging purposes
+    console.log("Received request body:", JSON.stringify(req.body, null, 2));
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     if (!GOOGLE_API_KEY) {
-        return res.status(500).json({ error: 'API key not configured on the server.' });
+        console.error("CRITICAL: GOOGLE_API_KEY environment variable is not set!");
+        return res.status(500).json({ error: 'Kunci API tidak dikonfigurasi di server. Harap periksa pengaturan Vercel.' });
     }
 
     const { type } = req.body;
@@ -28,12 +32,14 @@ export default async function handler(req, res) {
                 response = await handleAudioGeneration(req.body, GOOGLE_API_KEY, API_BASE_URL);
                 break;
             default:
-                return res.status(400).json({ error: 'Invalid generation type specified.' });
+                return res.status(400).json({ error: 'Tipe generasi tidak valid.' });
         }
         return res.status(200).json(response);
     } catch (error) {
-        console.error('Error processing API request:', error.message);
-        return res.status(500).json({ error: 'An internal server error occurred.', details: error.message });
+        // Log the full error for server-side debugging
+        console.error('Full error object:', error);
+        // Send a user-friendly error back to the frontend
+        return res.status(500).json({ error: 'Terjadi kesalahan saat berkomunikasi dengan Google AI.', details: error.message });
     }
 }
 
@@ -45,16 +51,15 @@ async function apiFetch(url, payload) {
     });
 
     if (!apiResponse.ok) {
-        let errorText = `Google API responded with status ${apiResponse.status}`;
+        let errorText = `Google API merespons dengan status ${apiResponse.status}`;
         try {
-            // Try to parse the error response as JSON, which is the common case
             const errorData = await apiResponse.json();
-            errorText += `: ${JSON.stringify(errorData)}`;
+            errorText = errorData.error?.message || JSON.stringify(errorData);
         } catch (e) {
-            // If it's not JSON (e.g., HTML error page), get the raw text
-            errorText += ` and the response was not valid JSON. Response body: ${await apiResponse.text()}`;
+            errorText += ` dan respons bukan JSON yang valid.`;
         }
         console.error("Google API Error:", errorText);
+        // Throw an error with a message that can be shown to the user
         throw new Error(errorText);
     }
     
@@ -106,7 +111,7 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
     const base64Image = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
     if (!base64Image) {
-        throw new Error('Image generation failed, no image data received from API.');
+        throw new Error('Generasi gambar gagal, tidak ada data gambar yang diterima dari API.');
     }
 
     return { base64Image };
@@ -135,7 +140,7 @@ async function handleTextGeneration(body, apiKey, baseUrl) {
     const result = await apiFetch(url, payload);
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if(!text) throw new Error('Text generation failed, no text data received from API.');
+    if(!text) throw new Error('Generasi teks gagal, tidak ada data teks yang diterima dari API.');
 
     const extractContent = (fullText, startMarker, endMarker) => {
         const startIndex = fullText.indexOf(startMarker);
@@ -181,7 +186,7 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
     const part = result?.candidates?.[0]?.content?.parts?.[0];
     
     if (!part?.inlineData?.data) {
-        throw new Error('Audio generation failed, no audio data received from API.');
+        throw new Error('Generasi audio gagal, tidak ada data audio yang diterima dari API.');
     }
     
     return { audioData: part.inlineData.data, mimeType: "audio/wav" };
