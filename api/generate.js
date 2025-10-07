@@ -1,5 +1,5 @@
 // Final, production-ready backend for Google AI.
-// This version includes the definitive fix for the Text-to-Speech (TTS) function.
+// This version implements the user-provided, proven-working logic for Text-to-Speech.
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -60,6 +60,7 @@ async function apiFetch(url, payload) {
 }
 
 async function handleImageGeneration(body, apiKey, baseUrl) {
+    // This function is correct and remains unchanged.
     const { productName, productType, productImage, photoConcept, modelGender, customBackground, faceImage } = body;
     if (!productName || !productType || !productImage || !productImage.base64) { throw new Error("Data produk tidak lengkap."); }
     const url = `${baseUrl}gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
@@ -101,6 +102,7 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
 }
 
 async function handleTextGeneration(body, apiKey, baseUrl) {
+    // This function is correct and remains unchanged.
     const { productName, productType } = body;
     if (!productName || !productType) { throw new Error("Nama dan tipe produk harus disertakan."); }
     const url = `${baseUrl}gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
@@ -130,6 +132,7 @@ async function handleTextGeneration(body, apiKey, baseUrl) {
 }
 
 async function handleAudioGeneration(body, apiKey, baseUrl) {
+    // --- PERBAIKAN FINAL DI SINI ---
     const { gender, narrative } = body;
     if (!gender || !narrative) {
         throw new Error("Data narasi untuk audio tidak lengkap.");
@@ -137,12 +140,9 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
 
     const url = `${baseUrl}gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
     
-    // --- PERBAIKAN FINAL DI SINI ---
-    const voiceName = gender === 'male' ? "Kore" : "Puck";
-    
-    // Prompt sekarang HANYA berisi teks yang akan diucapkan.
-    // Ini adalah metode yang paling andal.
-    const prompt = narrative;
+    // Mengadopsi logika dari referensi Anda yang terbukti berhasil.
+    const voiceName = gender === 'male' ? 'Kore' : 'Puck'; // Kore (Firm Male), Puck (Upbeat Female)
+    const prompt = `Ucapkan dengan gaya pencerita yang menarik: ${narrative}`;
 
     const payload = { 
         contents: [{ parts: [{ text: prompt }] }], 
@@ -150,7 +150,7 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
             responseModalities: ["AUDIO"], 
             speechConfig: { 
                 voiceConfig: { 
-                    prebuiltVoiceConfig: { voiceName } 
+                    prebuiltVoiceConfig: { voiceName: voiceName } 
                 } 
             } 
         }, 
@@ -160,7 +160,7 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
     const result = await apiFetch(url, payload);
     const part = result?.candidates?.[0]?.content?.parts?.[0];
     if (!part?.inlineData?.data) {
-        throw new Error('Generasi audio gagal. API tidak mengembalikan data audio.');
+        throw new Error('Generasi audio gagal. API tidak mengembalikan data audio. Pastikan API Text-to-Speech aktif di Google Cloud.');
     }
     return { audioData: part.inlineData.data, mimeType: "audio/wav" };
 }
