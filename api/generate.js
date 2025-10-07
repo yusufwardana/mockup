@@ -1,5 +1,5 @@
 // Final, production-ready backend for Google AI.
-// This version includes the definitive fix for the 'oneof' field error.
+// This version includes the definitive fix for the Text-to-Speech (TTS) function.
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -76,24 +76,21 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
     const basePrompt = `A magazine-quality fashion photograph, 9:16, of an attractive Indonesian ${modelGender === 'Pria' ? 'man' : 'woman'} model. The model is wearing a stylish ${productName} (${productType}). The setting is ${backgroundPrompt}. High detail, sharp focus.`;
     const images = [];
     for (let i = 0; i < 4; i++) {
-        // --- PERBAIKAN FINAL DI SINI ---
         const parts = [];
         let finalPrompt = basePrompt;
         if (i === 1) finalPrompt += " (different pose, full body shot)";
         if (i === 2) finalPrompt += " (slightly different angle, medium shot)";
         if (i === 3) finalPrompt += " (different subtle expression, close-up on the product)";
-
         if (faceImage && faceImage.base64) {
             const promptWithFace = `CRITICAL PRIORITY: Use the face from the FIRST provided image and accurately place it onto the model. SECOND, dress the model in the product from the SECOND provided image. The final image should follow this description: ${finalPrompt}`;
-            parts.push({ text: promptWithFace }); // Teks sebagai objek terpisah
-            parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } }); // Gambar wajah sebagai objek terpisah
-            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } }); // Gambar produk sebagai objek terpisah
+            parts.push({ text: promptWithFace });
+            parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } });
+            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
         } else {
             const promptWithoutFace = `The model in the photo must be wearing the product from the provided image. The final image should follow this description: ${finalPrompt}`;
-            parts.push({ text: promptWithoutFace }); // Teks sebagai objek terpisah
-            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } }); // Gambar produk sebagai objek terpisah
+            parts.push({ text: promptWithoutFace });
+            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
         }
-
         const payload = { contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE'] } };
         const result = await apiFetch(url, payload);
         const base64Image = result.candidates[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
@@ -134,14 +131,36 @@ async function handleTextGeneration(body, apiKey, baseUrl) {
 
 async function handleAudioGeneration(body, apiKey, baseUrl) {
     const { gender, narrative } = body;
-    if (!gender || !narrative) { throw new Error("Data narasi untuk audio tidak lengkap."); }
+    if (!gender || !narrative) {
+        throw new Error("Data narasi untuk audio tidak lengkap.");
+    }
+
     const url = `${baseUrl}gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-    const voiceStyle = gender === 'male' ? "Say in a relaxed, confident, and clear tone" : "Say in a gentle, upbeat, and energetic tone";
+    
+    // --- PERBAIKAN FINAL DI SINI ---
     const voiceName = gender === 'male' ? "Kore" : "Puck";
-    const prompt = `${voiceStyle}: ${narrative}`;
-    const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } } }, model: "gemini-2.5-flash-preview-tts" };
+    
+    // Prompt sekarang HANYA berisi teks yang akan diucapkan.
+    // Ini adalah metode yang paling andal.
+    const prompt = narrative;
+
+    const payload = { 
+        contents: [{ parts: [{ text: prompt }] }], 
+        generationConfig: { 
+            responseModalities: ["AUDIO"], 
+            speechConfig: { 
+                voiceConfig: { 
+                    prebuiltVoiceConfig: { voiceName } 
+                } 
+            } 
+        }, 
+        model: "gemini-2.5-flash-preview-tts" 
+    };
+    
     const result = await apiFetch(url, payload);
     const part = result?.candidates?.[0]?.content?.parts?.[0];
-    if (!part?.inlineData?.data) { throw new Error('Generasi audio gagal. API tidak mengembalikan data audio.'); }
+    if (!part?.inlineData?.data) {
+        throw new Error('Generasi audio gagal. API tidak mengembalikan data audio.');
+    }
     return { audioData: part.inlineData.data, mimeType: "audio/wav" };
 }
