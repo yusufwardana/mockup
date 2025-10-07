@@ -1,5 +1,5 @@
 // Final, production-ready backend for Google AI.
-// Features: 4-image generation and advanced prompt engineering for viral content.
+// This version generates 4 images by making 4 sequential calls to the API.
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -70,7 +70,6 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
     const url = `${baseUrl}gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
 
     let backgroundPrompt = "";
-    // Simplified background prompt for better composition
     switch(photoConcept) {
         case "Golden Hour Glow": backgroundPrompt = "beautiful golden hour lighting, cinematic"; break;
         case "Retro Analog Film": backgroundPrompt = "90s analog film aesthetic, grainy, vintage"; break;
@@ -83,91 +82,72 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
         backgroundPrompt = `at ${customBackground}`;
     }
 
-    const parts = [];
-    let promptText;
-
-    // The prompt is refined to be more direct and focused.
     const basePrompt = `A magazine-quality fashion photograph, 9:16 aspect ratio, of an attractive Indonesian ${modelGender === 'Pria' ? 'man' : 'woman'} model. The model is wearing a stylish ${productName} (${productType}). The setting is ${backgroundPrompt}. High detail, sharp focus, professional photography.`;
 
-    if (faceImage && faceImage.base64) {
-        promptText = `CRITICAL PRIORITY: Use the face from the FIRST provided image (face reference) and accurately place it onto the model. SECOND, dress the model in the product from the SECOND provided image (product image). The final image should follow this description: ${basePrompt}`;
-        parts.push({ text: promptText });
-        parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } });
-        parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
-    } else {
-        promptText = `The model in the photo must be wearing the product from the provided image. The final image should follow this description: ${basePrompt}`;
-        parts.push({ text: promptText });
-        parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
-    }
-    
-    const payload = {
-        contents: [{ parts }],
-        // NEW: Generate 4 candidates
-        generationConfig: { 
-            responseModalities: ['IMAGE'],
-            candidateCount: 4 
+    const images = [];
+
+    // --- NEW: Generate 4 images sequentially ---
+    for (let i = 0; i < 4; i++) {
+        const parts = [];
+        let finalPrompt = basePrompt;
+        
+        // Add variation prompts for each image except the first
+        if (i === 1) finalPrompt += " (different pose, full body shot)";
+        if (i === 2) finalPrompt += " (slightly different angle, medium shot)";
+        if (i === 3) finalPrompt += " (different subtle expression, close-up shot on the product)";
+
+        if (faceImage && faceImage.base64) {
+            const promptWithFace = `CRITICAL PRIORITY: Use the face from the FIRST provided image (face reference) and accurately place it onto the model. SECOND, dress the model in the product from the SECOND provided image (product image). The final image should follow this description: ${finalPrompt}`;
+            parts.push({ text: promptWithFace });
+            parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } });
+            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
+        } else {
+            const promptWithoutFace = `The model in the photo must be wearing the product from the provided image. The final image should follow this description: ${finalPrompt}`;
+            parts.push({ text: promptWithoutFace });
+            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
         }
-    };
-    
-    const result = await apiFetch(url, payload);
+        
+        const payload = {
+            contents: [{ parts }],
+            generationConfig: { 
+                responseModalities: ['IMAGE'],
+                // candidateCount is now 1 (default)
+            }
+        };
+        
+        const result = await apiFetch(url, payload);
+        const base64Image = result.candidates[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
-    // NEW: Extract all 4 images
-    const images = result.candidates.map(candidate => 
-        candidate.content?.parts?.find(p => p.inlineData)?.inlineData?.data
-    ).filter(Boolean); // Filter out any null/undefined results
-
-    if (!images || images.length === 0) {
-        throw new Error('Generasi gambar gagal, tidak ada data gambar yang diterima dari API.');
+        if (base64Image) {
+            images.push(base64Image);
+        } else {
+            // If one image fails, we can choose to stop or continue. Let's continue.
+            console.warn(`Image generation failed for variation ${i+1}`);
+        }
     }
 
-    return { images }; // Return an array of base64 strings
+    if (images.length === 0) {
+        throw new Error('Semua 4 percobaan generasi gambar gagal.');
+    }
+
+    return { images };
 }
 
 
 async function handleTextGeneration(body, apiKey, baseUrl) {
     const { productName } = body;
     if (!productName) throw new Error("Nama produk tidak terkirim.");
-    
     const url = `${baseUrl}gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    
-    // NEW: Advanced Prompt Engineering for Indonesian Viral Content
-    const prompt = `
-        Anda adalah seorang content creator TikTok dan affiliate marketer profesional dari Indonesia. Tugas Anda adalah membuat konten viral untuk produk bernama "${productName}". Bahasa yang digunakan harus 100% Bahasa Indonesia gaul, kasual, dan sangat persuasif.
-
-        IKUTI FORMAT INI DENGAN TEPAT:
-
-        CAPTION_TIKTOK:
-        [Buat 2-3 kalimat caption. Mulai dengan "hook" yang bikin penasaran. Gunakan storytelling singkat tentang masalah yang teratasi oleh produk ini. Akhiri dengan Call-to-Action (CTA) yang kuat dan jelas ke keranjang kuning. Wajib sertakan 3-5 emoji yang relevan dan 3 hashtag viral seperti #RacunTikTok #TikTokShop #FYP.]
-
-        NARASI_PROMOSI:
-        [Buat naskah voice over berdurasi sekitar 20 detik. Gaya bicara harus natural seperti sedang "spill" produk rahasia ke teman.
-        Struktur:
-        1. Hook (cth: "Gue nemu harta karun di TikTok Shop...").
-        2. Sebutkan 1-2 "pain point" atau masalah umum (cth: "Sering insecure sama outfit?").
-        3. Perkenalkan "${productName}" sebagai solusi pamungkas. Sebutkan 1-2 manfaat utamanya dengan bahasa yang menjual (cth: "Bahannya adem parah, bikin auto-glowing!").
-        4. Ciptakan urgensi/FOMO (cth: "Stoknya terbatas banget, jangan sampai kehabisan!").
-        5. Tutup dengan CTA yang sangat jelas (cth: "Langsung aja checkout di keranjang kuning sekarang!").]
-    `;
-
+    const prompt = `Anda adalah seorang content creator TikTok dan affiliate marketer profesional dari Indonesia. Tugas Anda adalah membuat konten viral untuk produk bernama "${productName}". Bahasa yang digunakan harus 100% Bahasa Indonesia gaul, kasual, dan sangat persuasif. IKUTI FORMAT INI DENGAN TEPAT: CAPTION_TIKTOK: [Buat 2-3 kalimat caption. Mulai dengan "hook" yang bikin penasaran. Gunakan storytelling singkat. Akhiri dengan CTA yang kuat ke keranjang kuning. Wajib sertakan 3-5 emoji dan 3 hashtag viral seperti #RacunTikTok #TikTokShop #FYP.] NARASI_PROMOSI: [Buat naskah voice over ~20 detik. Gaya bicara natural seperti sedang "spill" produk. Struktur: 1. Hook. 2. Sebutkan 1-2 "pain point". 3. Perkenalkan "${productName}" sebagai solusi. 4. Ciptakan urgensi/FOMO. 5. Tutup dengan CTA yang sangat jelas.]`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const result = await apiFetch(url, payload);
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error('Generasi teks gagal.');
-
-    const extractContent = (fullText, start, end) => {
-        const regex = new RegExp(`${start}:\\s*\\n?([\\s\\S]*?)(?=\\n*${end}|$)`);
-        const match = fullText.match(regex);
-        return match ? match[1].trim() : `Gagal mengekstrak bagian: ${start}`;
-    };
-
-    return { 
-        caption: extractContent(text, "CAPTION_TIKTOK", "NARASI_PROMOSI"), 
-        narrative: extractContent(text, "NARASI_PROMOSI", null) 
-    };
+    const extractContent = (fullText, start, end) => { const regex = new RegExp(`${start}:\\s*\\n?([\\s\\S]*?)(?=\\n*${end}|$)`); const match = fullText.match(regex); return match ? match[1].trim() : `Gagal mengekstrak bagian: ${start}`; };
+    return { caption: extractContent(text, "CAPTION_TIKTOK", "NARASI_PROMOSI"), narrative: extractContent(text, "NARASI_PROMOSI", null) };
 }
 
 async function handleAudioGeneration(body, apiKey, baseUrl) {
-    // This function remains the same, no changes needed.
     const { gender, narrative } = body;
     if (!gender || !narrative) throw new Error("Data audio tidak lengkap.");
     const url = `${baseUrl}gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
