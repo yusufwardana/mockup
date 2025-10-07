@@ -7,149 +7,182 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f7f8fa; }
-        .card { background-color: #ffffff; border-radius: 1rem; box-shadow: 0 4px B12px rgba(0,0,0,0.05); }
-        .grid-item { @apply flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-sm text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-1; }
-        .icon-wrapper { @apply w-12 h-12 rounded-full flex items-center justify-center mb-2; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f3f4; }
+        .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.07); }
+        .btn { @apply font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2; }
+        .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg; }
+        .btn-secondary { @apply bg-gray-600 text-white hover:bg-gray-700; }
+        .btn-tertiary { @apply bg-green-600 text-white hover:bg-green-700; }
+        button:disabled { @apply bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300; }
+        .form-control { @apply w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent; }
+        input[type="radio"]:checked + label { @apply bg-blue-100 text-blue-700 border-blue-400; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .image-container { position: relative; overflow: hidden; border-radius: 0.5rem; }
+        .image-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); padding: 0.5rem; transform: translateY(100%); transition: transform 0.3s ease-in-out; }
+        .image-container:hover .image-overlay { transform: translateY(0); }
         textarea { white-space: pre-wrap; }
-        input[type="radio"]:checked + label {
-            box-shadow: 0 0 0 2px #4f46e5; /* Ring Indigo */
-            background-color: #eef2ff;
-        }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-900">
 
-    <div class="container mx-auto max-w-lg p-4">
+    <div class="container mx-auto p-4 md:p-8">
         
-        <header class="flex justify-between items-center py-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-gray-900 rounded-full text-white flex items-center justify-center text-xl font-bold">AI</div>
-                <div>
-                    <h1 class="text-lg font-bold">AI Studio</h1>
-                    <p class="text-sm text-gray-500">Konten Produk Anda</p>
-                </div>
-            </div>
-            <button id="resetBtn" class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center"><i data-lucide="rotate-cw" class="h-5 w-5"></i></button>
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">AI Affiliate Studio</h1>
+            <p class="text-lg text-gray-600 mt-2">Optimalkan Konten Affiliate TikTok Anda.</p>
         </header>
 
-        <main class="space-y-6 mt-4">
-            <div class="card p-5">
-                <h2 class="text-base font-bold mb-4">Mulai Kreasi Anda</h2>
-                <div class="grid grid-cols-3 gap-4 text-xs font-medium">
-                    <div class="col-span-3 space-y-3">
-                        <input type="text" id="productName" placeholder="Nama Produk" class="w-full p-3 border rounded-lg bg-gray-50">
-                        <select id="productType" class="w-full p-3 border rounded-lg bg-gray-50">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Kolom Kontrol -->
+            <div class="space-y-6">
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold text-gray-700">Langkah 1: Detail Produk</h2>
+                    <div class="space-y-4 mt-4">
+                        <input type="text" id="productName" placeholder="Nama Produk" class="form-control">
+                        <select id="productType" class="form-control">
                             <option value="" disabled selected>Pilih Jenis Produk</option>
                             <option value="hoodie">Hoodie</option><option value="t-shirt">Kaos</option><option value="jacket">Jaket</option>
                         </select>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Gambar Produk</label>
+                                <input type="file" id="productImage" class="hidden" accept="image/*">
+                                <label for="productImage" class="relative flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100 bg-gray-50">
+                                    <div id="productImagePrompt" class="text-center text-gray-500"><i data-lucide="image-plus" class="mx-auto h-8 w-8"></i><span class="mt-2 block text-xs">Klik untuk unggah</span></div>
+                                    <img id="productImagePreview" src="" class="absolute inset-0 w-full h-full object-contain rounded-lg hidden p-1">
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Wajah (Opsional)</label>
+                                <input type="file" id="faceImage" class="hidden" accept="image/*">
+                                <label for="faceImage" class="relative flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100 bg-gray-50">
+                                    <div id="faceImagePrompt" class="text-center text-gray-500"><i data-lucide="user-plus" class="mx-auto h-8 w-8"></i><span class="mt-2 block text-xs">Klik untuk unggah</span></div>
+                                    <img id="faceImagePreview" src="" class="absolute inset-0 w-full h-full object-contain rounded-lg hidden p-1">
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <label for="productImage" class="grid-item"><div class="icon-wrapper bg-red-100 text-red-600"><i data-lucide="image-plus"></i></div><span id="productImageName">Unggah Produk</span><input type="file" id="productImage" class="hidden"></label>
-                    <label for="faceImage" class="grid-item"><div class="icon-wrapper bg-blue-100 text-blue-600"><i data-lucide="user-plus"></i></div><span id="faceImageName">Unggah Wajah</span><input type="file" id="faceImage" class="hidden"></label>
-                    <div class="grid-item" onclick="document.getElementById('customBackground').focus()"><div class="icon-wrapper bg-green-100 text-green-600"><i data-lucide="map-pin"></i></div><span>Latar Kustom</span></div>
-                    <input type="text" id="customBackground" placeholder="Tulis latar kustom di sini..." class="col-span-3 w-full p-3 border rounded-lg bg-gray-50">
                 </div>
-            </div>
-            
-            <div class="card p-5">
-                <h2 class="text-base font-bold mb-4">Pilih Gaya</h2>
-                <!-- PERBAIKAN FINAL DI SINI -->
-                <div class="space-y-4">
-                    <div class="flex gap-4 text-xs font-medium">
-                        <div class="flex-1"><input type="radio" name="modelGender" value="Pria" id="m1" class="hidden" checked><label for="m1" class="grid-item h-full"><div class="icon-wrapper bg-gray-100"><i data-lucide="user"></i></div>Pria</label></div>
-                        <div class="flex-1"><input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden"><label for="m2" class="grid-item h-full"><div class="icon-wrapper bg-gray-100"><i data-lucide="user"></i></div>Wanita</label></div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-4 text-xs font-medium">
-                        <input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden" checked><label for="c1" class="grid-item"><div class="icon-wrapper bg-gray-100"><i data-lucide="sun"></i></div>Golden Hour</label>
-                        <input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden"><label for="c2" class="grid-item"><div class="icon-wrapper bg-gray-100"><i data-lucide="film"></i></div>Retro</label>
-                        <input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden"><label for="c3" class="grid-item"><div class="icon-wrapper bg-gray-100"><i data-lucide="building-2"></i></div>Cyberpunk</label>
-                        <input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden"><label for="c4" class="grid-item"><div class="icon-wrapper bg-gray-100"><i data-lucide="coffee"></i></div>Kafe</label>
-                        <input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden"><label for="c5" class="grid-item"><div class="icon-wrapper bg-gray-100"><i data-lucide="mountain"></i></div>Alam</label>
-                        <input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden"><label for="c6" class="grid-item"><div class="icon-wrapper bg-gray-100"><i data-lucide="square"></i></div>Studio</label>
+
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold text-gray-700">Langkah 2: Konsep Visual</h2>
+                    <div class="space-y-4 mt-4">
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden peer" checked><label for="c1" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Golden Hour</label></div>
+                            <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden peer"><label for="c2" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Retro Film</label></div>
+                            <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden peer"><label for="c3" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Cyberpunk</label></div>
+                            <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden peer"><label for="c4" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Coffee Shop</label></div>
+                            <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden peer"><label for="c5" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Alam</label></div>
+                            <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden peer"><label for="c6" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Studio</label></div>
+                        </div>
+                         <input type="text" id="customBackground" placeholder="Atau ketik latar kustom di sini..." class="form-control">
                     </div>
                 </div>
             </div>
 
-             <div class="sticky bottom-4 z-10">
-                <button id="generateImageBtn" class="w-full font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg hover:shadow-indigo-500/50 hover:-translate-y-1 disabled:bg-gray-400 disabled:shadow-none disabled:translate-y-0">
-                    <i data-lucide="sparkles" class="h-5 w-5"></i><span>Generate Foto</span>
-                </button>
-            </div>
-            
-            <div id="resultSection" class="space-y-6">
-                <div id="imageResult" class="grid grid-cols-2 gap-4"></div>
-                <div id="textAudioSection" class="hidden fade-in card p-5 space-y-4">
-                    <button id="generateTextBtn" class="w-full text-sm font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 bg-green-500 text-white" disabled><i data-lucide="file-text" class="h-4 w-4"></i>Buat Teks & Prompt</button>
-                    <div class="relative"><label class="font-semibold text-gray-700 text-sm">Deskripsi TikTok</label><textarea id="tiktokCaption" rows="4" class="w-full text-sm p-2 mt-1 border rounded-lg bg-gray-50" readonly></textarea><button onclick="copyToClipboard('tiktokCaption')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
-                    <div class="relative"><label class="font-semibold text-gray-700 text-sm">Prompt Image-to-Video</label><textarea id="videoPrompt" rows="5" class="w-full text-sm p-2 mt-1 border rounded-lg bg-gray-50" readonly></textarea><button onclick="copyToClipboard('videoPrompt')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
-                    <div>
-                        <div id="audioLoader" class="hidden justify-center items-center py-2"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div></div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button id="generateMaleAudioBtn" class="text-xs font-semibold py-2 px-2 rounded-lg flex items-center justify-center gap-1 bg-blue-500 text-white"><i data-lucide="mic" class="h-4 w-4"></i>Suara Pria</button>
-                            <button id="generateFemaleAudioBtn" class="text-xs font-semibold py-2 px-2 rounded-lg flex items-center justify-center gap-1 bg-pink-500 text-white"><i data-lucide="mic" class="h-4 w-4"></i>Suara Wanita</button>
-                        </div>
-                        <div id="maleAudioContainer" class="hidden mt-2"><audio controls class="w-full h-10"></audio></div>
-                        <div id="femaleAudioContainer" class="hidden mt-2"><audio controls class="w-full h-10"></audio></div>
+            <div class="space-y-6">
+                 <div class="card p-6">
+                    <h2 class="text-xl font-semibold text-gray-700">Hasil Generasi AI</h2>
+                    <div class="mt-4 p-2 bg-gray-100 rounded-lg flex justify-between items-center text-sm">
+                        <span>Sisa Kuota/Menit: <b id="apiCreditCounter" class="text-blue-600"></b></span>
+                        <span id="apiTimer" class="text-gray-500"></span>
                     </div>
-                </div>
+
+                    <div class="space-y-6 mt-6">
+                        <button id="generateImageBtn" class="btn btn-primary w-full text-base"><i data-lucide="image" class="h-5 w-5"></i>1. Generate Foto</button>
+                        <div id="imageResult" class="grid grid-cols-2 gap-4 min-h-[200px]">
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
+                        </div>
+
+                        <button id="generateTextBtn" class="btn btn-tertiary w-full" disabled><i data-lucide="file-text" class="h-5 w-5"></i>2. Generate Semua Teks</button>
+                        <div id="textLoader" class="hidden justify-center items-center py-4"><div class="loader" style="width:24px; height:24px;"></div></div>
+                        <div id="textSection" class="hidden fade-in space-y-4">
+                            <div class="relative"><label class="font-semibold text-gray-700 text-sm">Deskripsi Konten</label><textarea id="contentDescription" rows="4" class="form-control mt-1 text-sm" readonly></textarea><button onclick="copyToClipboard('contentDescription')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
+                            <div class="relative"><label class="font-semibold text-gray-700 text-sm">Caption Konten (TikTok)</label><textarea id="tiktokCaption" rows="4" class="form-control mt-1 text-sm" readonly></textarea><button onclick="copyToClipboard('tiktokCaption')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
+                            <div class="relative"><label class="font-semibold text-gray-700 text-sm">Narasi Konten (Voice Over)</label><textarea id="promoNarrative" rows="5" class="form-control mt-1 text-sm" readonly></textarea><button onclick="copyToClipboard('promoNarrative')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
+                            <div class="relative"><label class="font-semibold text-gray-700 text-sm">Prompt Image-to-Video (English)</label><textarea id="videoPrompt" rows="5" class="form-control mt-1 text-sm" readonly></textarea><button onclick="copyToClipboard('videoPrompt')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
+                            
+                            <div class="pt-4 border-t">
+                                <label class="font-semibold text-gray-700 text-sm">3. Generate Voice Over (dari Narasi)</label>
+                                <div id="audioLoader" class="hidden justify-center items-center py-2"><div class="loader" style="width:24px; height:24px;"></div></div>
+                                <div class="grid grid-cols-2 gap-3 mt-2">
+                                    <button id="generateMaleAudioBtn" class="btn bg-blue-500 text-white text-xs" disabled><i data-lucide="mic" class="h-4 w-4"></i>Suara Pria</button>
+                                    <button id="generateFemaleAudioBtn" class="btn bg-pink-500 text-white text-xs" disabled><i data-lucide="mic" class="h-4 w-4"></i>Suara Wanita</button>
+                                </div>
+                                <div id="maleAudioContainer" class="hidden mt-2"><audio controls class="w-full h-10"></audio></div>
+                                <div id="femaleAudioContainer" class="hidden mt-2"><audio controls class="w-full h-10"></audio></div>
+                            </div>
+                        </div>
+
+                        <button id="resetBtn" class="btn btn-secondary w-full"><i data-lucide="rotate-cw" class="h-5 w-5"></i>Mulai Lagi</button>
+                    </div>
+                 </div>
             </div>
-        </main>
+        </div>
     </div>
 
 <script>
     lucide.createIcons();
-    // JavaScript logic is the final, correct version and does not need changes.
     const getElement = (id) => document.getElementById(id);
-    const elements = { buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, results: { image: getElement('imageResult'), textAudioSection: getElement('textAudioSection'), tiktokCaption: getElement('tiktokCaption'), videoPrompt: getElement('videoPrompt'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, loaders: { audio: getElement('audioLoader'), }, inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, displays: { productImageName: getElement('productImageName'), faceImageName: getElement('faceImageName'), } };
-    function useCredit() { /* Dummy function for now */ return true; }
+    const elements = { buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, results: { image: getElement('imageResult'), textSection: getElement('textSection'), contentDescription: getElement('contentDescription'), tiktokCaption: getElement('tiktokCaption'), promoNarrative: getElement('promoNarrative'), videoPrompt: getElement('videoPrompt'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, loaders: { text: getElement('textLoader'), audio: getElement('audioLoader'), }, inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, displays: { productImagePrompt: getElement('productImagePrompt'), faceImagePrompt: getElement('faceImagePrompt'), productImagePreview: getElement('productImagePreview'), faceImagePreview: getElement('faceImagePreview'), creditCounter: getElement('apiCreditCounter'), apiTimer: getElement('apiTimer'), }, };
+    const RPM_LIMIT = 15; let credits = RPM_LIMIT; let timerInterval;
+    function updateCreditDisplay() { elements.displays.creditCounter.textContent = `${credits}/${RPM_LIMIT}`; }
+    function startApiTimer() { if (timerInterval) clearInterval(timerInterval); let timeLeft = 60; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; timerInterval = setInterval(() => { timeLeft--; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; if (timeLeft <= 0) { clearInterval(timerInterval); credits = RPM_LIMIT; updateCreditDisplay(); elements.displays.apiTimer.textContent = ''; } }, 1000); }
+    function useCredit() { if (credits === RPM_LIMIT) { startApiTimer(); } if (credits > 0) { credits--; updateCreditDisplay(); return true; } alert("Kuota per menit habis. Tunggu reset."); return false; }
+    document.addEventListener('DOMContentLoaded', updateCreditDisplay);
     const API_ROUTE = '/api/generate';
     async function callApi(endpoint, body) { const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!response.ok) { const error = await response.json(); throw new Error(error.details || error.error || 'Kesalahan tidak diketahui'); } return response.json(); }
     function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
     function base64ToBlob(base64, mimeType) { const byteCharacters = atob(base64); const byteNumbers = new Array(byteCharacters.length); for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } const byteArray = new Uint8Array(byteNumbers); return new Blob([byteArray], {type: mimeType}); }
     function copyToClipboard(elementId) { const textArea = getElement(elementId); textArea.select(); document.execCommand('copy'); alert('Teks berhasil disalin!'); }
     function downloadImage(base64, fileName) { const link = document.createElement('a'); link.href = `data:image/png;base64,${base64}`; link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-    elements.inputs.productImage.addEventListener('change', function() { elements.displays.productImageName.textContent = this.files.length > 0 ? `✔️ Produk` : 'Unggah Produk'; });
-    elements.inputs.faceImage.addEventListener('change', function() { elements.displays.faceImageName.textContent = this.files.length > 0 ? `✔️ Wajah` : 'Unggah Wajah'; });
+    elements.inputs.productImage.addEventListener('change', function() { if (this.files && this.files[0]) { elements.displays.productImagePreview.src = URL.createObjectURL(this.files[0]); elements.displays.productImagePreview.classList.remove('hidden'); elements.displays.productImagePrompt.classList.add('hidden'); } });
+    elements.inputs.faceImage.addEventListener('change', function() { if (this.files && this.files[0]) { elements.displays.faceImagePreview.src = URL.createObjectURL(this.files[0]); elements.displays.faceImagePreview.classList.remove('hidden'); elements.displays.faceImagePrompt.classList.add('hidden'); } });
     elements.buttons.image.addEventListener('click', async () => {
         if (!useCredit()) return;
-        const { productName, productType, productImage } = elements.inputs;
-        if (!productName.value || !productType.value || !productImage.files[0]) { alert("Harap isi Nama, Tipe, dan Gambar Produk."); return; }
+        if (!elements.inputs.productName.value || !elements.inputs.productType.value || !elements.inputs.productImage.files[0]) { alert("Harap isi Nama, Tipe, dan Gambar Produk."); return; }
         elements.buttons.image.disabled = true;
-        elements.results.image.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-64"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div><p class="mt-2 text-gray-500">AI sedang bekerja...</p></div>`;
+        elements.results.image.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-full"><div class="loader"></div><p class="mt-2 text-gray-500">AI sedang membuat 4 gambar... (bisa > 40d)</p></div>`;
         try {
-            const productImageBase64 = await fileToBase64(productImage.files[0]);
+            const productImageBase64 = await fileToBase64(elements.inputs.productImage.files[0]);
             let faceImageBase64 = null;
             if (elements.inputs.faceImage.files[0]) { faceImageBase64 = await fileToBase64(elements.inputs.faceImage.files[0]); }
-            const payload = { type: 'image', productName: productName.value, productType: productType.value, photoConcept: document.querySelector('input[name="photoConcept"]:checked').value, modelGender: document.querySelector('input[name="modelGender"]:checked').value, customBackground: getElement('customBackground').value, productImage: { base64: productImageBase64, mimeType: productImage.files[0].type }, faceImage: elements.inputs.faceImage.files[0] ? { base64: faceImageBase64, mimeType: elements.inputs.faceImage.files[0].type } : null, };
+            const payload = { type: 'image', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value, photoConcept: document.querySelector('input[name="photoConcept"]:checked').value, modelGender: document.querySelector('input[name="modelGender"]:checked').value, customBackground: getElement('customBackground').value, productImage: { base64: productImageBase64, mimeType: elements.inputs.productImage.files[0].type }, faceImage: elements.inputs.faceImage.files[0] ? { base64: faceImageBase64, mimeType: elements.inputs.faceImage.files[0].type } : null, };
             const result = await callApi(API_ROUTE, payload);
             if (result.images && result.images.length > 0) {
                 elements.results.image.innerHTML = '';
                 result.images.forEach((base64, index) => {
-                    const imageName = `${productName.value.replace(/\s+/g, '_')}_${index + 1}.png`;
+                    const imageName = `${elements.inputs.productName.value.replace(/\s+/g, '_')}_${index + 1}.png`;
                     const imgContainer = document.createElement('div');
-                    imgContainer.className = 'relative group aspect-[9/16] fade-in';
-                    imgContainer.innerHTML = `<img src="data:image/png;base64,${base64}" class="w-full h-full object-cover rounded-xl"><div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><button onclick="downloadImage('${base64}', '${imageName}')" class="bg-white text-black p-2 rounded-full"><i data-lucide="download" class="w-5 h-5"></i></button></div>`;
+                    imgContainer.className = 'image-container aspect-[9/16] fade-in';
+                    imgContainer.innerHTML = `<img src="data:image/png;base64,${base64}" class="w-full h-full object-cover"><div class="image-overlay flex justify-center items-center"><button onclick="downloadImage('${base64}', '${imageName}')" class="bg-white text-black p-2 rounded-full hover:bg-gray-200 transition-all"><i data-lucide="download" class="w-5 h-5"></i></button></div>`;
                     elements.results.image.appendChild(imgContainer);
                 });
                 lucide.createIcons();
-                elements.results.textAudioSection.classList.remove('hidden');
                 elements.buttons.text.disabled = false;
             } else { throw new Error(result.error || 'Gagal membuat gambar.'); }
-        } catch (error) { elements.results.image.innerHTML = `<p class="col-span-full text-red-500 text-center p-4">${error.message}</p>`; } finally { elements.buttons.image.disabled = false; }
+        } catch (error) { elements.results.image.innerHTML = `<p class="col-span-full text-red-500 text-center p-4">${error.message}</p>`; elements.buttons.image.disabled = false; }
     });
     elements.buttons.text.addEventListener('click', async () => {
          if (!useCredit()) return;
          elements.buttons.text.disabled = true;
+         elements.loaders.text.style.display = 'flex';
+         elements.results.textSection.classList.add('hidden');
          try {
              const result = await callApi(API_ROUTE, { type: 'text', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value });
+             elements.results.contentDescription.value = result.description || "Gagal menghasilkan deskripsi.";
              elements.results.tiktokCaption.value = result.caption || "Gagal menghasilkan caption.";
+             elements.results.promoNarrative.value = result.narrative || "Gagal menghasilkan narasi.";
              elements.results.videoPrompt.value = result.videoPrompt || "Gagal menghasilkan prompt video.";
-         } catch (error) { alert(`Gagal membuat teks: ${error.message}`); } finally { elements.buttons.text.disabled = false; }
+             elements.results.textSection.classList.remove('hidden');
+             elements.buttons.maleAudio.disabled = false;
+             elements.buttons.femaleAudio.disabled = false;
+         } catch (error) { alert(`Gagal membuat teks: ${error.message}`); } finally { elements.loaders.text.style.display = 'none'; elements.buttons.text.disabled = false;}
     });
     async function generateAudio(gender) {
         if (!useCredit()) return;
@@ -157,7 +190,7 @@
         const container = (gender === 'male') ? elements.results.maleAudioContainer : elements.results.femaleAudioContainer;
         container.classList.add('hidden');
         try {
-            const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative: elements.results.tiktokCaption.value });
+            const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative: elements.results.promoNarrative.value });
             const blob = base64ToBlob(result.audioData, result.mimeType);
             container.querySelector('audio').src = URL.createObjectURL(blob);
             container.classList.remove('hidden');
