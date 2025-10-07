@@ -164,3 +164,234 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
     }
     return { audioData: part.inlineData.data, mimeType: "audio/wav" };
 }
+
+
+// --- DOM Elements ---
+const imageUpload = document.getElementById('image-upload');
+const imagePreviewContainer = document.getElementById('image-preview-container');
+const imagePreview = document.getElementById('image-preview');
+const imagePlaceholder = document.getElementById('image-placeholder');
+const generateNarrationBtn = document.getElementById('generate-narration-btn');
+const narrationOutput = document.getElementById('narration-output');
+const generateVoiceBtn = document.getElementById('generate-voice-btn');
+const audioContainer = document.getElementById('audio-container');
+const audioPlayer = document.getElementById('audio-player');
+const narrationLoader = document.getElementById('narration-loader');
+const voiceLoader = document.getElementById('voice-loader');
+const errorMessage = document.getElementById('error-message');
+
+// --- State ---
+let base64ImageData = null;
+
+// --- Gemini API Configuration ---
+const API_KEY = ""; // Biarkan kosong, akan di-handle oleh environment
+const TEXT_MODEL = "gemini-2.5-flash-preview-05-20";
+const TTS_MODEL = "gemini-2.5-flash-preview-tts";
+const TEXT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${API_KEY}`;
+const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${API_KEY}`;
+
+// --- Event Listeners ---
+imagePreviewContainer.addEventListener('click', () => imageUpload.click());
+imageUpload.addEventListener('change', handleImageUpload);
+generateNarrationBtn.addEventListener('click', handleGenerateNarration);
+generateVoiceBtn.addEventListener('click', handleGenerateVoiceOver);
+
+// --- Functions ---
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+    setTimeout(() => errorMessage.classList.add('hidden'), 5000);
+}
+
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            base64ImageData = reader.result.split(',')[1];
+            imagePreview.src = reader.result;
+            imagePreview.classList.remove('hidden');
+            imagePlaceholder.classList.add('hidden');
+            generateNarrationBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+async function makeApiCall(url, payload) {
+    let retries = 3;
+    let delay = 1000;
+    while (retries > 0) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`API call failed: ${error.message}. Retrying...`);
+            retries--;
+            if (retries === 0) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff
+        }
+    }
+}
+
+async function handleGenerateNarration() {
+    if (!base64ImageData) {
+        showError("Silakan unggah gambar terlebih dahulu.");
+        return;
+    }
+
+    narrationLoader.classList.remove('hidden');
+    generateNarrationBtn.disabled = true;
+    narrationOutput.value = "";
+    errorMessage.classList.add('hidden');
+
+    try {
+        const systemPrompt = "Anda adalah seorang pembuat konten TikTok yang ahli. Buatlah narasi yang pendek, menarik, dan viral untuk gambar yang diberikan. Gunakan bahasa gaul, ajukan pertanyaan retoris, dan akhiri dengan ajakan bertindak (call to action) untuk memancing komentar.";
+        const userQuery = "Buatkan narasi TikTok untuk gambar ini.";
+
+        const payload = {
+            contents: [{
+                parts: [
+                    { text: userQuery },
+                    { inlineData: { mimeType: "image/jpeg", data: base64ImageData } }
+                ]
+            }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+        };
+
+        const result = await makeApiCall(TEXT_API_URL, payload);
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (text) {
+            narrationOutput.value = text;
+            generateVoiceBtn.disabled = false;
+        } else {
+            throw new Error("Gagal mendapatkan narasi dari API.");
+        }
+
+    } catch (error) {
+        console.error("Error generating narration:", error);
+        showError("Maaf, terjadi kesalahan saat membuat narasi. Coba lagi.");
+    } finally {
+        narrationLoader.classList.add('hidden');
+        generateNarrationBtn.disabled = false;
+    }
+}
+
+async function handleGenerateVoiceOver() {
+    const narration = narrationOutput.value.trim();
+    if (!narration) {
+        showError("Tidak ada narasi untuk diubah menjadi suara.");
+        return;
+    }
+
+    voiceLoader.classList.remove('hidden');
+    audioContainer.classList.add('hidden');
+    generateVoiceBtn.disabled = true;
+    errorMessage.classList.add('hidden');
+
+    try {
+        const selectedVoice = document.querySelector('input[name="voice"]:checked').value;
+        const voiceName = selectedVoice === 'male' ? 'Kore' : 'Puck'; // Kore (Firm Male), Puck (Upbeat Female)
+
+        const payload = {
+            contents: [{ parts: [{ text: `Ucapkan dengan gaya pencerita yang menarik: ${narration}` }] }],
+            generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } }
+                }
+            },
+            model: TTS_MODEL
+        };
+        
+        const result = await makeApiCall(TTS_API_URL, payload);
+        const part = result?.candidates?.[0]?.content?.parts?.[0];
+        const audioData = part?.inlineData?.data;
+        const mimeType = part?.inlineData?.mimeType;
+
+        if (audioData && mimeType && mimeType.startsWith("audio/")) {
+            const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+            const pcmData = base64ToArrayBuffer(audioData);
+            const pcm16 = new Int16Array(pcmData);
+            const wavBlob = pcmToWav(pcm16, sampleRate);
+            const audioUrl = URL.createObjectURL(wavBlob);
+            audioPlayer.src = audioUrl;
+            audioContainer.classList.remove('hidden');
+        } else {
+            throw new Error("Gagal mendapatkan data audio dari API.");
+        }
+
+    } catch (error) {
+        console.error("Error generating voice over:", error);
+        showError("Maaf, terjadi kesalahan saat membuat suara. Coba lagi.");
+    } finally {
+        voiceLoader.classList.add('hidden');
+        generateVoiceBtn.disabled = false;
+    }
+}
+
+// --- Audio Helper Functions ---
+function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+function pcmToWav(pcmData, sampleRate) {
+    const numChannels = 1;
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+    const blockAlign = numChannels * bitsPerSample / 8;
+    const dataSize = pcmData.length * 2; // 16-bit samples are 2 bytes
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+
+    // RIFF chunk descriptor
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeString(view, 8, 'WAVE');
+    // "fmt " sub-chunk
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // Audio format (1 is PCM)
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+    // "data" sub-chunk
+    writeString(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // Write PCM data
+    let offset = 44;
+    for (let i = 0; i < pcmData.length; i++, offset += 2) {
+        view.setInt16(offset, pcmData[i], true);
+    }
+
+    return new Blob([view], { type: 'audio/wav' });
+}
+
+function writeString(view, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+    }
+}
+
+// Initial state
+generateNarrationBtn.disabled = true;
+generateVoiceBtn.disabled = true;
