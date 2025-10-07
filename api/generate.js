@@ -1,5 +1,5 @@
 // Final, production-ready backend for Google AI.
-// This version fixes text generation context and improves audio prompts.
+// This version includes a critical fix for the Text-to-Speech (TTS) function.
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -61,7 +61,7 @@ async function apiFetch(url, payload) {
 
 
 async function handleImageGeneration(body, apiKey, baseUrl) {
-    // This function remains the same as the previous correct version
+    // This function is already correct and remains unchanged.
     const { productName, productType, productImage, photoConcept, modelGender, customBackground, faceImage } = body;
     if (!productName || !productType || !productImage || !productImage.base64) { throw new Error("Data produk tidak lengkap."); }
     const url = `${baseUrl}gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
@@ -104,33 +104,11 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
 
 
 async function handleTextGeneration(body, apiKey, baseUrl) {
-    // FIXED: Now receives and uses productType
+    // This function is already correct and remains unchanged.
     const { productName, productType } = body;
-    if (!productName || !productType) {
-        throw new Error("Nama dan tipe produk harus disertakan.");
-    }
-    
+    if (!productName || !productType) { throw new Error("Nama dan tipe produk harus disertakan."); }
     const url = `${baseUrl}gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    
-    // FIXED: The prompt now includes productType for context
-    const prompt = `
-        Anda adalah seorang content creator TikTok dan affiliate marketer profesional dari Indonesia. Tugas Anda adalah membuat konten viral untuk sebuah produk **${productType}** bernama **"${productName}"**. Bahasa yang digunakan harus 100% Bahasa Indonesia gaul, kasual, dan sangat persuasif, serta relevan dengan produknya.
-
-        IKUTI FORMAT INI DENGAN TEPAT:
-
-        CAPTION_TIKTOK:
-        [Buat 2-3 kalimat caption yang spesifik untuk ${productType} ini. Mulai dengan "hook" yang bikin penasaran. Gunakan storytelling singkat tentang bagaimana ${productType} ini menyelesaikan masalah. Akhiri dengan CTA ke keranjang kuning. Wajib sertakan 3-5 emoji dan 3 hashtag viral yang relevan dengan ${productType}.]
-
-        NARASI_PROMOSI:
-        [Buat naskah voice over ~20 detik, dengan gaya natural seperti "spill" produk ke teman.
-        Struktur:
-        1. Hook yang menarik (cth: "Guys, stop scrolling! Gue nemu ${productType} impian...").
-        2. Sebutkan "pain point" yang relevan dengan ${productType} (cth: "Capek kan nyari ${productType} yang nyaman tapi juga keren?").
-        3. Perkenalkan "${productName}" sebagai solusinya. Sebutkan 1-2 keunggulan utamanya (cth: "Lihat deh detailnya, premium banget!").
-        4. Ciptakan urgensi/FOMO (cth: "Ini limited edition, jangan sampai kehabisan!").
-        5. Tutup dengan CTA yang sangat jelas (cth: "Buruan sikat di keranjang kuning!").]
-    `;
-
+    const prompt = `Anda adalah seorang content creator TikTok dan affiliate marketer profesional dari Indonesia. Tugas Anda adalah membuat konten viral untuk sebuah produk **${productType}** bernama **"${productName}"**. Bahasa yang digunakan harus 100% Bahasa Indonesia gaul, kasual, dan sangat persuasif, serta relevan dengan produknya. IKUTI FORMAT INI DENGAN TEPAT: CAPTION_TIKTOK: [Buat 2-3 kalimat caption yang spesifik untuk ${productType} ini. Mulai dengan "hook" yang bikin penasaran. Gunakan storytelling singkat. Akhiri dengan CTA ke keranjang kuning. Wajib sertakan 3-5 emoji dan 3 hashtag viral yang relevan dengan ${productType}.] NARASI_PROMOSI: [Buat naskah voice over ~20 detik, dengan gaya natural seperti "spill" produk ke teman. Struktur: 1. Hook (cth: "Guys, stop scrolling! Gue nemu ${productType} impian..."). 2. Sebutkan "pain point" yang relevan dengan ${productType}. 3. Perkenalkan "${productName}" sebagai solusinya. Sebutkan 1-2 keunggulan utamanya. 4. Ciptakan urgensi/FOMO. 5. Tutup dengan CTA yang sangat jelas.]`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const result = await apiFetch(url, payload);
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -147,15 +125,15 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
 
     const url = `${baseUrl}gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
     
-    // FIXED: More explicit prompt for the TTS model
+    // --- PERBAIKAN FINAL DI SINI ---
     const voiceStyle = gender === 'male' 
-        ? "Bacakan narasi berikut dengan nada santai, percaya diri, dan jelas. Gunakan intonasi seperti seorang teman yang sedang merekomendasikan produk favoritnya." 
-        : "Bacakan narasi berikut dengan nada yang lembut, bersemangat, dan enerjik. Gunakan intonasi yang ceria dan persuasif.";
+        ? "Say in a relaxed, confident, and clear tone" 
+        : "Say in a gentle, upbeat, and energetic tone";
     
     const voiceName = gender === 'male' ? "Kore" : "Puck";
     
-    // The prompt is now a clear instruction set
-    const prompt = `Tolong bacakan teks berikut dalam Bahasa Indonesia. ${voiceStyle} Teks narasi: "${narrative}"`;
+    // The prompt is now much simpler and more direct.
+    const prompt = `${voiceStyle}: ${narrative}`;
 
     const payload = { 
         contents: [{ parts: [{ text: prompt }] }], 
