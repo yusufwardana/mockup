@@ -13,7 +13,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #f1f3f4; }
         .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.07); }
         .btn { @apply font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2; }
-        .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg; }
+        .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700 shadow; }
         .btn-secondary { @apply bg-gray-600 text-white hover:bg-gray-700; }
         .btn-tertiary { @apply bg-green-600 text-white hover:bg-green-700; }
         button:disabled { @apply bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300; }
@@ -32,8 +32,8 @@
     <div class="container mx-auto p-4 md:p-8">
         
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">AI Affiliate Studio</h1>
-            <p class="text-lg text-gray-600 mt-2">Optimalkan Konten Affiliate TikTok Anda.</p>
+            <h1 class="text-4xl font-bold text-gray-800">AI Content Studio</h1>
+            <p class="text-lg text-gray-600 mt-2">Buat konten promosi untuk produk Anda dengan AI.</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -71,13 +71,23 @@
                 <div class="card p-6">
                     <h2 class="text-xl font-semibold text-gray-700">Langkah 2: Konsep Visual</h2>
                     <div class="space-y-4 mt-4">
-                        <div class="grid grid-cols-3 gap-2 text-xs">
-                            <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden peer" checked><label for="c1" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Golden Hour</label></div>
-                            <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden peer"><label for="c2" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Retro Film</label></div>
-                            <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden peer"><label for="c3" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Cyberpunk</label></div>
-                            <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden peer"><label for="c4" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Coffee Shop</label></div>
-                            <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden peer"><label for="c5" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Alam</label></div>
-                            <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden peer"><label for="c6" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Studio</label></div>
+                        <div>
+                            <label class="font-medium text-sm">Model</label>
+                            <div class="grid grid-cols-2 gap-3 mt-2">
+                                <div><input type="radio" name="modelGender" value="Pria" id="m1" class="hidden peer" checked><label for="m1" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Pria</label></div>
+                                <div><input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden peer"><label for="m2" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Wanita</label></div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-medium text-sm">Tema Foto</label>
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden peer" checked><label for="c1" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Golden Hour</label></div>
+                                <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden peer"><label for="c2" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Retro Film</label></div>
+                                <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden peer"><label for="c3" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Cyberpunk</label></div>
+                                <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden peer"><label for="c4" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Coffee Shop</label></div>
+                                <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden peer"><label for="c5" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Alam</label></div>
+                                <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden peer"><label for="c6" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Studio</label></div>
+                            </div>
                         </div>
                          <input type="text" id="customBackground" placeholder="Atau ketik latar kustom di sini..." class="form-control">
                     </div>
@@ -97,9 +107,11 @@
                         <div id="imageResult" class="grid grid-cols-2 gap-4 min-h-[200px]">
                             <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
                             <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
                         </div>
 
-                        <button id="generateTextBtn" class="btn btn-tertiary w-full" disabled><i data-lucide="file-text" class="h-5 w-5"></i>2. Generate Semua Teks</button>
+                        <button id="generateTextBtn" class="btn btn-tertiary w-full" disabled><i data-lucide="file-text" class="h-5 w-5"></i>2. Generate Teks & Prompt</button>
                         <div id="textLoader" class="hidden justify-center items-center py-4"><div class="loader" style="width:24px; height:24px;"></div></div>
                         <div id="textSection" class="hidden fade-in space-y-4">
                             <div class="relative"><label class="font-semibold text-gray-700 text-sm">Deskripsi Konten</label><textarea id="contentDescription" rows="4" class="form-control mt-1 text-sm" readonly></textarea><button onclick="copyToClipboard('contentDescription')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200"><i data-lucide="copy" class="h-4 w-4"></i></button></div>
@@ -126,80 +138,82 @@
         </div>
     </div>
 
-<script>
-    lucide.createIcons();
-    const getElement = (id) => document.getElementById(id);
-    const elements = { buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, results: { image: getElement('imageResult'), textSection: getElement('textSection'), contentDescription: getElement('contentDescription'), tiktokCaption: getElement('tiktokCaption'), promoNarrative: getElement('promoNarrative'), videoPrompt: getElement('videoPrompt'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, loaders: { text: getElement('textLoader'), audio: getElement('audioLoader'), }, inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, displays: { productImagePrompt: getElement('productImagePrompt'), faceImagePrompt: getElement('faceImagePrompt'), productImagePreview: getElement('productImagePreview'), faceImagePreview: getElement('faceImagePreview'), creditCounter: getElement('apiCreditCounter'), apiTimer: getElement('apiTimer'), }, };
-    const RPM_LIMIT = 15; let credits = RPM_LIMIT; let timerInterval;
-    function updateCreditDisplay() { elements.displays.creditCounter.textContent = `${credits}/${RPM_LIMIT}`; }
-    function startApiTimer() { if (timerInterval) clearInterval(timerInterval); let timeLeft = 60; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; timerInterval = setInterval(() => { timeLeft--; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; if (timeLeft <= 0) { clearInterval(timerInterval); credits = RPM_LIMIT; updateCreditDisplay(); elements.displays.apiTimer.textContent = ''; } }, 1000); }
-    function useCredit() { if (credits === RPM_LIMIT) { startApiTimer(); } if (credits > 0) { credits--; updateCreditDisplay(); return true; } alert("Kuota per menit habis. Tunggu reset."); return false; }
-    document.addEventListener('DOMContentLoaded', updateCreditDisplay);
-    const API_ROUTE = '/api/generate';
-    async function callApi(endpoint, body) { const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!response.ok) { const error = await response.json(); throw new Error(error.details || error.error || 'Kesalahan tidak diketahui'); } return response.json(); }
-    function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
-    function base64ToBlob(base64, mimeType) { const byteCharacters = atob(base64); const byteNumbers = new Array(byteCharacters.length); for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } const byteArray = new Uint8Array(byteNumbers); return new Blob([byteArray], {type: mimeType}); }
-    function copyToClipboard(elementId) { const textArea = getElement(elementId); textArea.select(); document.execCommand('copy'); alert('Teks berhasil disalin!'); }
-    function downloadImage(base64, fileName) { const link = document.createElement('a'); link.href = `data:image/png;base64,${base64}`; link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-    elements.inputs.productImage.addEventListener('change', function() { if (this.files && this.files[0]) { elements.displays.productImagePreview.src = URL.createObjectURL(this.files[0]); elements.displays.productImagePreview.classList.remove('hidden'); elements.displays.productImagePrompt.classList.add('hidden'); } });
-    elements.inputs.faceImage.addEventListener('change', function() { if (this.files && this.files[0]) { elements.displays.faceImagePreview.src = URL.createObjectURL(this.files[0]); elements.displays.faceImagePreview.classList.remove('hidden'); elements.displays.faceImagePrompt.classList.add('hidden'); } });
-    elements.buttons.image.addEventListener('click', async () => {
-        if (!useCredit()) return;
-        if (!elements.inputs.productName.value || !elements.inputs.productType.value || !elements.inputs.productImage.files[0]) { alert("Harap isi Nama, Tipe, dan Gambar Produk."); return; }
-        elements.buttons.image.disabled = true;
-        elements.results.image.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-full"><div class="loader"></div><p class="mt-2 text-gray-500">AI sedang membuat 4 gambar... (bisa > 40d)</p></div>`;
-        try {
-            const productImageBase64 = await fileToBase64(elements.inputs.productImage.files[0]);
-            let faceImageBase64 = null;
-            if (elements.inputs.faceImage.files[0]) { faceImageBase64 = await fileToBase64(elements.inputs.faceImage.files[0]); }
-            const payload = { type: 'image', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value, photoConcept: document.querySelector('input[name="photoConcept"]:checked').value, modelGender: document.querySelector('input[name="modelGender"]:checked').value, customBackground: getElement('customBackground').value, productImage: { base64: productImageBase64, mimeType: elements.inputs.productImage.files[0].type }, faceImage: elements.inputs.faceImage.files[0] ? { base64: faceImageBase64, mimeType: elements.inputs.faceImage.files[0].type } : null, };
-            const result = await callApi(API_ROUTE, payload);
-            if (result.images && result.images.length > 0) {
-                elements.results.image.innerHTML = '';
-                result.images.forEach((base64, index) => {
-                    const imageName = `${elements.inputs.productName.value.replace(/\s+/g, '_')}_${index + 1}.png`;
-                    const imgContainer = document.createElement('div');
-                    imgContainer.className = 'image-container aspect-[9/16] fade-in';
-                    imgContainer.innerHTML = `<img src="data:image/png;base64,${base64}" class="w-full h-full object-cover"><div class="image-overlay flex justify-center items-center"><button onclick="downloadImage('${base64}', '${imageName}')" class="bg-white text-black p-2 rounded-full hover:bg-gray-200 transition-all"><i data-lucide="download" class="w-5 h-5"></i></button></div>`;
-                    elements.results.image.appendChild(imgContainer);
-                });
-                lucide.createIcons();
-                elements.buttons.text.disabled = false;
-            } else { throw new Error(result.error || 'Gagal membuat gambar.'); }
-        } catch (error) { elements.results.image.innerHTML = `<p class="col-span-full text-red-500 text-center p-4">${error.message}</p>`; elements.buttons.image.disabled = false; }
-    });
-    elements.buttons.text.addEventListener('click', async () => {
-         if (!useCredit()) return;
-         elements.buttons.text.disabled = true;
-         elements.loaders.text.style.display = 'flex';
-         elements.results.textSection.classList.add('hidden');
-         try {
-             const result = await callApi(API_ROUTE, { type: 'text', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value });
-             elements.results.contentDescription.value = result.description || "Gagal menghasilkan deskripsi.";
-             elements.results.tiktokCaption.value = result.caption || "Gagal menghasilkan caption.";
-             elements.results.promoNarrative.value = result.narrative || "Gagal menghasilkan narasi.";
-             elements.results.videoPrompt.value = result.videoPrompt || "Gagal menghasilkan prompt video.";
-             elements.results.textSection.classList.remove('hidden');
-             elements.buttons.maleAudio.disabled = false;
-             elements.buttons.femaleAudio.disabled = false;
-         } catch (error) { alert(`Gagal membuat teks: ${error.message}`); } finally { elements.loaders.text.style.display = 'none'; elements.buttons.text.disabled = false;}
-    });
-    async function generateAudio(gender) {
-        if (!useCredit()) return;
-        elements.loaders.audio.style.display = 'flex';
-        const container = (gender === 'male') ? elements.results.maleAudioContainer : elements.results.femaleAudioContainer;
-        container.classList.add('hidden');
-        try {
-            const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative: elements.results.promoNarrative.value });
-            const blob = base64ToBlob(result.audioData, result.mimeType);
-            container.querySelector('audio').src = URL.createObjectURL(blob);
-            container.classList.remove('hidden');
-        } catch (error) { alert(`Gagal membuat audio: ${error.message}`); } finally { elements.loaders.audio.style.display = 'none'; }
-    }
-    elements.buttons.maleAudio.addEventListener('click', () => generateAudio('male'));
-    elements.buttons.femaleAudio.addEventListener('click', () => generateAudio('female'));
-    elements.buttons.reset.addEventListener('click', () => { window.location.reload(); });
-</script>
+    <!-- PERBAIKAN FINAL: Script dipindahkan ke akhir body -->
+    <script>
+        lucide.createIcons();
+        const getElement = (id) => document.getElementById(id);
+        const elements = { buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, results: { image: getElement('imageResult'), textSection: getElement('textSection'), contentDescription: getElement('contentDescription'), tiktokCaption: getElement('tiktokCaption'), promoNarrative: getElement('promoNarrative'), videoPrompt: getElement('videoPrompt'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, loaders: { text: getElement('textLoader'), audio: getElement('audioLoader'), }, inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, displays: { productImagePrompt: getElement('productImagePrompt'), faceImagePrompt: getElement('faceImagePrompt'), productImagePreview: getElement('productImagePreview'), faceImagePreview: getElement('faceImagePreview'), creditCounter: getElement('apiCreditCounter'), apiTimer: getElement('apiTimer'), }, };
+        const RPM_LIMIT = 15; let credits = RPM_LIMIT; let timerInterval;
+        function updateCreditDisplay() { elements.displays.creditCounter.textContent = `${credits}/${RPM_LIMIT}`; }
+        function startApiTimer() { if (timerInterval) clearInterval(timerInterval); let timeLeft = 60; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; timerInterval = setInterval(() => { timeLeft--; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; if (timeLeft <= 0) { clearInterval(timerInterval); credits = RPM_LIMIT; updateCreditDisplay(); elements.displays.apiTimer.textContent = ''; } }, 1000); }
+        function useCredit() { if (credits === RPM_LIMIT) { startApiTimer(); } if (credits > 0) { credits--; updateCreditDisplay(); return true; } alert("Kuota per menit habis. Tunggu reset."); return false; }
+        document.addEventListener('DOMContentLoaded', updateCreditDisplay);
+        const API_ROUTE = '/api/generate';
+        async function callApi(endpoint, body) { const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!response.ok) { const error = await response.json(); throw new Error(error.details || error.error || 'Kesalahan tidak diketahui'); } return response.json(); }
+        function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
+        function base64ToBlob(base64, mimeType) { const byteCharacters = atob(base64); const byteNumbers = new Array(byteCharacters.length); for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } const byteArray = new Uint8Array(byteNumbers); return new Blob([byteArray], {type: mimeType}); }
+        function copyToClipboard(elementId) { const textArea = getElement(elementId); textArea.select(); document.execCommand('copy'); alert('Teks berhasil disalin!'); }
+        function downloadImage(base64, fileName) { const link = document.createElement('a'); link.href = `data:image/png;base64,${base64}`; link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+        elements.inputs.productImage.addEventListener('change', function() { if (this.files && this.files[0]) { elements.displays.productImagePreview.src = URL.createObjectURL(this.files[0]); elements.displays.productImagePreview.classList.remove('hidden'); elements.displays.productImagePrompt.classList.add('hidden'); } });
+        elements.inputs.faceImage.addEventListener('change', function() { if (this.files && this.files[0]) { elements.displays.faceImagePreview.src = URL.createObjectURL(this.files[0]); elements.displays.faceImagePreview.classList.remove('hidden'); elements.displays.faceImagePrompt.classList.add('hidden'); } });
+        elements.buttons.image.addEventListener('click', async () => {
+            if (!useCredit()) return;
+            if (!elements.inputs.productName.value || !elements.inputs.productType.value || !elements.inputs.productImage.files[0]) { alert("Harap isi Nama, Tipe, dan Gambar Produk."); return; }
+            elements.buttons.image.disabled = true;
+            elements.results.image.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-full"><div class="loader"></div><p class="mt-2 text-gray-500">AI sedang membuat 4 gambar... (bisa > 40d)</p></div>`;
+            try {
+                const productImageBase64 = await fileToBase64(elements.inputs.productImage.files[0]);
+                let faceImageBase64 = null;
+                if (elements.inputs.faceImage.files[0]) { faceImageBase64 = await fileToBase64(elements.inputs.faceImage.files[0]); }
+                const payload = { type: 'image', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value, photoConcept: document.querySelector('input[name="photoConcept"]:checked').value, modelGender: document.querySelector('input[name="modelGender"]:checked').value, customBackground: getElement('customBackground').value, productImage: { base64: productImageBase64, mimeType: elements.inputs.productImage.files[0].type }, faceImage: elements.inputs.faceImage.files[0] ? { base64: faceImageBase64, mimeType: elements.inputs.faceImage.files[0].type } : null, };
+                const result = await callApi(API_ROUTE, payload);
+                if (result.images && result.images.length > 0) {
+                    elements.results.image.innerHTML = '';
+                    result.images.forEach((base64, index) => {
+                        const imageName = `${elements.inputs.productName.value.replace(/\s+/g, '_')}_${index + 1}.png`;
+                        const imgContainer = document.createElement('div');
+                        imgContainer.className = 'image-container aspect-[9/16] fade-in';
+                        imgContainer.innerHTML = `<img src="data:image/png;base64,${base64}" class="w-full h-full object-cover"><div class="image-overlay flex justify-center items-center"><button onclick="downloadImage('${base64}', '${imageName}')" class="bg-white text-black p-2 rounded-full hover:bg-gray-200 transition-all"><i data-lucide="download" class="w-5 h-5"></i></button></div>`;
+                        elements.results.image.appendChild(imgContainer);
+                    });
+                    lucide.createIcons();
+                    elements.buttons.text.disabled = false;
+                } else { throw new Error(result.error || 'Gagal membuat gambar.'); }
+            } catch (error) { elements.results.image.innerHTML = `<p class="col-span-full text-red-500 text-center p-4">${error.message}</p>`; elements.buttons.image.disabled = false; }
+        });
+        elements.buttons.text.addEventListener('click', async () => {
+             if (!useCredit()) return;
+             elements.buttons.text.disabled = true;
+             elements.loaders.text.style.display = 'flex';
+             elements.results.textSection.classList.add('hidden');
+             try {
+                 const result = await callApi(API_ROUTE, { type: 'text', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value });
+                 elements.results.contentDescription.value = result.description || "Gagal menghasilkan deskripsi.";
+                 elements.results.tiktokCaption.value = result.caption || "Gagal menghasilkan caption.";
+                 elements.results.promoNarrative.value = result.narrative || "Gagal menghasilkan narasi.";
+                 elements.results.videoPrompt.value = result.videoPrompt || "Gagal menghasilkan prompt video.";
+                 elements.results.textSection.classList.remove('hidden');
+                 elements.buttons.maleAudio.disabled = false;
+                 elements.buttons.femaleAudio.disabled = false;
+             } catch (error) { alert(`Gagal membuat teks: ${error.message}`); } finally { elements.loaders.text.style.display = 'none'; elements.buttons.text.disabled = false;}
+        });
+        async function generateAudio(gender) {
+            if (!useCredit()) return;
+            elements.loaders.audio.style.display = 'flex';
+            const container = (gender === 'male') ? elements.results.maleAudioContainer : elements.results.femaleAudioContainer;
+            container.classList.add('hidden');
+            try {
+                const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative: elements.results.promoNarrative.value });
+                const blob = base64ToBlob(result.audioData, result.mimeType);
+                container.querySelector('audio').src = URL.createObjectURL(blob);
+                container.classList.remove('hidden');
+            } catch (error) { alert(`Gagal membuat audio: ${error.message}`); } finally { elements.loaders.audio.style.display = 'none'; }
+        }
+        elements.buttons.maleAudio.addEventListener('click', () => generateAudio('male'));
+        elements.buttons.femaleAudio.addEventListener('click', () => generateAudio('female'));
+        elements.buttons.reset.addEventListener('click', () => { window.location.reload(); });
+    </script>
+
 </body>
 </html>
 
