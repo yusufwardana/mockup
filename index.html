@@ -107,8 +107,6 @@
                         <div id="imageResult" class="grid grid-cols-2 gap-4 min-h-[200px]">
                             <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
                             <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
-                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
-                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
                         </div>
 
                         <button id="generateTextBtn" class="btn btn-tertiary w-full" disabled><i data-lucide="file-text" class="h-5 w-5"></i>2. Generate Teks & Prompt</button>
@@ -128,6 +126,8 @@
                                 </div>
                                 <div id="maleAudioContainer" class="hidden mt-2"><audio controls class="w-full h-10"></audio></div>
                                 <div id="femaleAudioContainer" class="hidden mt-2"><audio controls class="w-full h-10"></audio></div>
+                                <!-- PERBAIKAN: Kotak Log Error ditambahkan di sini -->
+                                <pre id="audioLogError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg overflow-x-auto"></pre>
                             </div>
                         </div>
 
@@ -138,11 +138,21 @@
         </div>
     </div>
 
-    <!-- PERBAIKAN FINAL: Script dipindahkan ke akhir body -->
     <script>
         lucide.createIcons();
         const getElement = (id) => document.getElementById(id);
-        const elements = { buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, results: { image: getElement('imageResult'), textSection: getElement('textSection'), contentDescription: getElement('contentDescription'), tiktokCaption: getElement('tiktokCaption'), promoNarrative: getElement('promoNarrative'), videoPrompt: getElement('videoPrompt'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, loaders: { text: getElement('textLoader'), audio: getElement('audioLoader'), }, inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, displays: { productImagePrompt: getElement('productImagePrompt'), faceImagePrompt: getElement('faceImagePrompt'), productImagePreview: getElement('productImagePreview'), faceImagePreview: getElement('faceImagePreview'), creditCounter: getElement('apiCreditCounter'), apiTimer: getElement('apiTimer'), }, };
+        const elements = { 
+            buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, 
+            results: { image: getElement('imageResult'), textSection: getElement('textSection'), contentDescription: getElement('contentDescription'), tiktokCaption: getElement('tiktokCaption'), promoNarrative: getElement('promoNarrative'), videoPrompt: getElement('videoPrompt'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, 
+            loaders: { text: getElement('textLoader'), audio: getElement('audioLoader'), }, 
+            inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, 
+            displays: { 
+                productImagePrompt: getElement('productImagePrompt'), faceImagePrompt: getElement('faceImagePrompt'),
+                productImagePreview: getElement('productImagePreview'), faceImagePreview: getElement('faceImagePreview'),
+                creditCounter: getElement('apiCreditCounter'), apiTimer: getElement('apiTimer'), 
+                audioLogError: getElement('audioLogError'), // PERBAIKAN: Referensi elemen log
+            }, 
+        };
         const RPM_LIMIT = 15; let credits = RPM_LIMIT; let timerInterval;
         function updateCreditDisplay() { elements.displays.creditCounter.textContent = `${credits}/${RPM_LIMIT}`; }
         function startApiTimer() { if (timerInterval) clearInterval(timerInterval); let timeLeft = 60; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; timerInterval = setInterval(() => { timeLeft--; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; if (timeLeft <= 0) { clearInterval(timerInterval); credits = RPM_LIMIT; updateCreditDisplay(); elements.displays.apiTimer.textContent = ''; } }, 1000); }
@@ -201,19 +211,30 @@
             if (!useCredit()) return;
             elements.loaders.audio.style.display = 'flex';
             const container = (gender === 'male') ? elements.results.maleAudioContainer : elements.results.femaleAudioContainer;
+            const logContainer = elements.displays.audioLogError;
+            
+            // PERBAIKAN: Sembunyikan log lama setiap kali mencoba
+            logContainer.classList.add('hidden');
             container.classList.add('hidden');
+
             try {
                 const result = await callApi(API_ROUTE, { type: 'audio', gender, narrative: elements.results.promoNarrative.value });
                 const blob = base64ToBlob(result.audioData, result.mimeType);
                 container.querySelector('audio').src = URL.createObjectURL(blob);
                 container.classList.remove('hidden');
-            } catch (error) { alert(`Gagal membuat audio: ${error.message}`); } finally { elements.loaders.audio.style.display = 'none'; }
+            } catch (error) {
+                // PERBAIKAN: Tampilkan error di kotak log
+                console.error(`Error generating ${gender} audio:`, error);
+                logContainer.textContent = `Pesan Error: ${error.message}`;
+                logContainer.classList.remove('hidden');
+            } finally {
+                elements.loaders.audio.style.display = 'none';
+            }
         }
         elements.buttons.maleAudio.addEventListener('click', () => generateAudio('male'));
         elements.buttons.femaleAudio.addEventListener('click', () => generateAudio('female'));
         elements.buttons.reset.addEventListener('click', () => { window.location.reload(); });
     </script>
-
 </body>
 </html>
 
