@@ -16,6 +16,7 @@
         .btn-secondary { @apply w-full bg-gray-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5; }
         .btn-tertiary { @apply w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5; }
         button:disabled { @apply bg-gray-400 cursor-not-allowed shadow-none transform-none hover:bg-gray-400; }
+        /* Perbaikan Final: Menggunakan peer-checked untuk styling */
         input[type="radio"]:checked + label { @apply border-indigo-500 bg-indigo-50 ring-2 ring-indigo-300; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -36,7 +37,6 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Kolom Kontrol (Kiri) -->
             <div class="lg:col-span-1 space-y-6">
-                <!-- Status & Kredit -->
                 <div class="glass-card p-5 rounded-xl shadow-md">
                     <h2 class="text-xl font-bold mb-3 text-gray-800">Status API</h2>
                     <div class="flex justify-between items-center bg-gray-100 p-3 rounded-lg">
@@ -46,7 +46,6 @@
                      <p id="apiTimer" class="text-sm text-center text-gray-500 mt-2"></p>
                 </div>
 
-                <!-- Detail Produk -->
                 <div class="glass-card p-5 rounded-xl shadow-md">
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center"><i data-lucide="package" class="mr-2"></i>Langkah 1: Detail Produk</h2>
                     <div class="space-y-4">
@@ -72,52 +71,33 @@
                     </div>
                 </div>
 
-                <!-- Konsep Visual -->
                 <div class="glass-card p-5 rounded-xl shadow-md">
                     <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center"><i data-lucide="camera" class="mr-2"></i>Langkah 2: Konsep Visual</h2>
                     <div class="space-y-4">
                         <div>
                             <label class="font-medium">Model</label>
-                            <!-- FIXED STRUCTURE FOR RADIO BUTTONS -->
                             <div class="grid grid-cols-2 gap-2 mt-2">
+                                <!-- PERBAIKAN FINAL DI SINI -->
                                 <div>
-                                    <input type="radio" name="modelGender" value="Pria" id="m1" class="hidden" checked>
-                                    <label for="m1" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Pria</label>
+                                    <input type="radio" name="modelGender" value="Pria" id="m1" class="hidden peer" checked>
+                                    <label for="m1" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Pria</label>
                                 </div>
                                 <div>
-                                    <input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden">
-                                    <label for="m2" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Wanita</label>
+                                    <input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden peer">
+                                    <label for="m2" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Wanita</label>
                                 </div>
                             </div>
                         </div>
                         <div>
                             <label class="font-medium">Tema Foto</label>
-                             <!-- FIXED STRUCTURE FOR RADIO BUTTONS -->
                             <div class="grid grid-cols-2 gap-2 mt-2">
-                                <div>
-                                    <input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden" checked>
-                                    <label for="c1" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Golden Hour</label>
-                                </div>
-                                <div>
-                                    <input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden">
-                                    <label for="c2" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Retro Film</label>
-                                </div>
-                                <div>
-                                    <input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden">
-                                    <label for="c3" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Cyberpunk</label>
-                                </div>
-                                <div>
-                                    <input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden">
-                                    <label for="c4" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Coffee Shop</label>
-                                </div>
-                                <div>
-                                    <input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden">
-                                    <label for="c5" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Alam Terbuka</label>
-                                </div>
-                                <div>
-                                    <input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden">
-                                    <label for="c6" class="block text-center p-2 border rounded-lg cursor-pointer transition-all">Studio</label>
-                                </div>
+                                <!-- DAN PERBAIKAN FINAL DI SINI -->
+                                <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden peer" checked><label for="c1" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Golden Hour</label></div>
+                                <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden peer"><label for="c2" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Retro Film</label></div>
+                                <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden peer"><label for="c3" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Cyberpunk</label></div>
+                                <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden peer"><label for="c4" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Coffee Shop</label></div>
+                                <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden peer"><label for="c5" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Alam Terbuka</label></div>
+                                <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden peer"><label for="c6" class="block text-center p-2 border rounded-lg cursor-pointer transition-all peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-300">Studio</label></div>
                             </div>
                         </div>
                         <div>
@@ -128,16 +108,13 @@
                 </div>
             </div>
 
-            <!-- Kolom Hasil (Kanan) -->
             <div class="lg:col-span-2 space-y-8">
-                 <!-- Kontrol Utama -->
                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <button id="generateImageBtn" class="btn-primary flex items-center justify-center"><i data-lucide="image" class="mr-2"></i>Generate Foto</button>
                     <button id="generateTextBtn" class="btn-tertiary flex items-center justify-center" disabled><i data-lucide="file-text" class="mr-2"></i>Generate Teks</button>
                     <button id="resetBtn" class="btn-secondary flex items-center justify-center"><i data-lucide="rotate-cw" class="mr-2"></i>Mulai Lagi</button>
                 </div>
                 
-                <!-- Hasil Foto -->
                 <div id="imageSection" class="space-y-4">
                     <h2 class="text-2xl font-bold text-gray-800">Hasil Foto Produk (4 Opsi)</h2>
                     <div id="imageResult" class="grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[200px] bg-white p-4 rounded-xl shadow-inner">
@@ -148,23 +125,19 @@
                     </div>
                 </div>
 
-                <!-- Hasil Teks & Suara -->
                 <div id="textAudioSection" class="space-y-4 hidden fade-in">
                     <h2 class="text-2xl font-bold text-gray-800">Hasil Konten Teks & Suara</h2>
                     <div class="bg-white p-5 rounded-xl shadow-inner space-y-6">
-                        <!-- Caption -->
                         <div class="relative">
                             <label class="font-semibold text-gray-700">Deskripsi TikTok (Viral)</label>
                             <textarea id="tiktokCaption" rows="4" class="w-full p-3 mt-1 border rounded-lg bg-gray-50 focus:outline-none" readonly></textarea>
                             <button onclick="copyToClipboard('tiktokCaption')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200 transition-colors"><i data-lucide="copy"></i></button>
                         </div>
-                        <!-- Narasi -->
                         <div class="relative">
                             <label class="font-semibold text-gray-700">Narasi Video (Persuasif)</label>
                             <textarea id="promoNarrative" rows="5" class="w-full p-3 mt-1 border rounded-lg bg-gray-50 focus:outline-none" readonly></textarea>
                             <button onclick="copyToClipboard('promoNarrative')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200 transition-colors"><i data-lucide="copy"></i></button>
                         </div>
-                        <!-- Audio -->
                         <div>
                             <label class="font-semibold text-gray-700">Generate Suara</label>
                             <div id="audioLoader" class="hidden justify-center items-center py-4"><div class="loader"></div></div>
@@ -172,14 +145,8 @@
                                 <button id="generateMaleAudioBtn" class="bg-blue-500 text-white font-bold p-3 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-all"><i data-lucide="mic" class="mr-2"></i>Suara Pria</button>
                                 <button id="generateFemaleAudioBtn" class="bg-pink-500 text-white font-bold p-3 rounded-lg flex items-center justify-center hover:bg-pink-600 transition-all"><i data-lucide="mic" class="mr-2"></i>Suara Wanita</button>
                             </div>
-                            <div id="maleAudioContainer" class="hidden mt-3">
-                                <label class="font-medium text-sm">Hasil Suara Pria:</label>
-                                <audio controls class="w-full mt-1"></audio>
-                            </div>
-                            <div id="femaleAudioContainer" class="hidden mt-3">
-                                <label class="font-medium text-sm">Hasil Suara Wanita:</label>
-                                <audio controls class="w-full mt-1"></audio>
-                            </div>
+                            <div id="maleAudioContainer" class="hidden mt-3"> <label class="font-medium text-sm">Hasil Suara Pria:</label> <audio controls class="w-full mt-1"></audio> </div>
+                            <div id="femaleAudioContainer" class="hidden mt-3"> <label class="font-medium text-sm">Hasil Suara Wanita:</label> <audio controls class="w-full mt-1"></audio> </div>
                         </div>
                     </div>
                 </div>
@@ -243,7 +210,7 @@
          elements.buttons.text.disabled = true;
          elements.results.textAudioSection.classList.remove('hidden');
          try {
-             const result = await callApi(API_ROUTE, { type: 'text', productName: elements.inputs.productName.value });
+             const result = await callApi(API_ROUTE, { type: 'text', productName: elements.inputs.productName.value, productType: elements.inputs.productType.value });
              elements.results.tiktokCaption.value = result.caption || "Gagal menghasilkan caption.";
              elements.results.promoNarrative.value = result.narrative || "Gagal menghasilkan narasi.";
          } catch (error) { alert(`Gagal membuat teks: ${error.message}`); elements.buttons.text.disabled = false; }
