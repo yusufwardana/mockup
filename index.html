@@ -3,143 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Content Studio - Glass Edition</title>
+    <title>AI Content Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #1f2937;
-        }
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-        }
-        .btn-primary { @apply w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-xl hover:bg-slate-900 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5; }
-        .btn-secondary { @apply w-full bg-white/50 text-slate-800 font-bold py-3 px-4 rounded-xl hover:bg-white/80 transition-all; }
-        .btn-tertiary { @apply w-full bg-white/80 text-slate-800 font-bold py-3 px-4 rounded-xl hover:bg-white transition-all; }
-        button:disabled { @apply bg-gray-300/50 text-gray-500 cursor-not-allowed shadow-none transform-none hover:bg-gray-300/50; }
-        input[type="radio"]:checked + label { @apply border-slate-700 bg-white/70 text-slate-900 ring-2 ring-slate-500; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f3f4; }
+        .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); }
+        .btn { @apply font-semibold py-2 px-4 rounded-full transition-all duration-200 flex items-center justify-center gap-2; }
+        .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg; }
+        .btn-secondary { @apply bg-gray-200 text-gray-800 hover:bg-gray-300; }
+        .btn-tertiary { @apply bg-green-600 text-white hover:bg-green-700; }
+        button:disabled { @apply bg-gray-300 text-gray-500 cursor-not-allowed shadow-none hover:bg-gray-300; }
+        .form-control { @apply w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent; }
+        .form-select { @apply w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent; }
+        input[type="radio"]:checked + label { @apply bg-blue-100 text-blue-700 border-blue-400; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .image-container { position: relative; overflow: hidden; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .image-container { position: relative; overflow: hidden; border-radius: 0.5rem; }
         .image-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); padding: 0.5rem; transform: translateY(100%); transition: transform 0.3s ease-in-out; }
         .image-container:hover .image-overlay { transform: translateY(0); }
-        .bg-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.3;
-        }
     </style>
 </head>
-<body class="text-gray-800">
-    <!-- Ornamen latar belakang -->
-    <div class="bg-pattern">
-        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div class="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-0 -left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-    </div>
+<body class="text-gray-900">
 
+    <div class="container mx-auto p-4 md:p-6">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold">
+                <span class="text-blue-600">AI</span> <span class="text-red-600">Content</span> <span class="text-yellow-500">Studio</span>
+            </h1>
+            <p class="text-gray-600 mt-2">Buat konten visual dan teks untuk produk Anda dengan Gemini.</p>
+        </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-        <!-- Kolom Kontrol (Kiri) -->
-        <div class="lg:col-span-1 p-6 md:p-8 space-y-8 overflow-y-auto">
-            <header class="mb-8">
-                <h1 class="text-4xl font-extrabold text-white tracking-tight" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2);">AI Content Studio</h1>
-                <p class="text-indigo-100">Your one-click viral content generator</p>
-            </header>
-
-            <div class="glass-card p-6 rounded-2xl">
-                <h2 class="text-xl font-bold mb-4 text-slate-800 flex items-center gap-3"><span class="bg-white/50 text-slate-700 rounded-full w-8 h-8 flex items-center justify-center font-bold">1</span> Unggah Aset</h2>
-                <div class="space-y-4">
-                    <input type="text" id="productName" placeholder="Nama Produk" class="w-full p-3 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-slate-600 placeholder:text-gray-600">
-                    <select id="productType" class="w-full p-3 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-slate-600">
-                        <option value="" disabled selected>Pilih Jenis Produk</option>
-                        <option value="hoodie">Hoodie</option><option value="t-shirt">Kaos</option><option value="jacket">Jaket</option><option value="pants">Celana</option><option value="hat">Topi</option><option value="shoes">Sepatu</option>
-                    </select>
-                    <input type="file" id="productImage" class="hidden"><label for="productImage" class="flex items-center justify-center w-full p-3 border-2 border-dashed border-white/50 rounded-lg cursor-pointer hover:bg-white/30"><i data-lucide="image" class="mr-2 h-5 w-5"></i><span id="productImageName">Unggah Gambar Produk</span></label>
-                    <input type="file" id="faceImage" class="hidden"><label for="faceImage" class="flex items-center justify-center w-full p-3 border-2 border-dashed border-white/50 rounded-lg cursor-pointer hover:bg-white/30"><i data-lucide="user-scan" class="mr-2 h-5 w-5"></i><span id="faceImageName">Unggah Wajah (Opsional)</span></label>
-                </div>
-            </div>
-
-            <div class="glass-card p-6 rounded-2xl">
-                <h2 class="text-xl font-bold mb-4 text-slate-800 flex items-center gap-3"><span class="bg-white/50 text-slate-700 rounded-full w-8 h-8 flex items-center justify-center font-bold">2</span> Pilih Gaya Visual</h2>
-                <div class="space-y-6">
-                    <div>
-                        <label class="font-semibold text-slate-800">Model</label>
-                        <div class="grid grid-cols-2 gap-3 mt-2">
-                            <div><input type="radio" name="modelGender" value="Pria" id="m1" class="hidden peer" checked><label for="m1" class="flex items-center justify-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70">Pria</label></div>
-                            <div><input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden peer"><label for="m2" class="flex items-center justify-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70">Wanita</label></div>
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <!-- Kolom Kontrol -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="card p-6">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2"><i data-lucide="sliders-horizontal"></i> Kontrol Utama</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center bg-gray-100 p-2 rounded-lg">
+                            <span class="font-medium text-sm text-gray-700">Sisa Kuota (per menit):</span>
+                            <div id="apiCreditCounter" class="font-bold text-blue-600"></div>
+                        </div>
+                        <p id="apiTimer" class="text-xs text-center text-gray-500"></p>
+                        <button id="generateImageBtn" class="btn btn-primary w-full text-base"><i data-lucide="sparkles" class="h-5 w-5"></i>Generate Foto</button>
+                        <div class="grid grid-cols-2 gap-3">
+                             <button id="generateTextBtn" class="btn btn-tertiary text-sm" disabled><i data-lucide="file-text" class="h-4 w-4"></i>Buat Teks</button>
+                             <button id="resetBtn" class="btn btn-secondary text-sm"><i data-lucide="rotate-cw" class="h-4 w-4"></i>Mulai Lagi</button>
                         </div>
                     </div>
-                    <div>
-                        <label class="font-semibold text-slate-800">Tema Foto</label>
-                        <div class="grid grid-cols-3 gap-3 mt-2">
-                             <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden peer" checked><label for="c1" class="flex flex-col items-center text-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70"><i data-lucide="sun" class="mb-1"></i><span class="text-sm">Golden Hour</span></label></div>
-                             <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden peer"><label for="c2" class="flex flex-col items-center text-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70"><i data-lucide="film" class="mb-1"></i><span class="text-sm">Retro Film</span></label></div>
-                             <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden peer"><label for="c3" class="flex flex-col items-center text-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70"><i data-lucide="building-2" class="mb-1"></i><span class="text-sm">Cyberpunk</span></label></div>
-                             <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden peer"><label for="c4" class="flex flex-col items-center text-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70"><i data-lucide="coffee" class="mb-1"></i><span class="text-sm">Coffee Shop</span></label></div>
-                             <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden peer"><label for="c5" class="flex flex-col items-center text-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70"><i data-lucide="mountain-snow" class="mb-1"></i><span class="text-sm">Alam</span></label></div>
-                             <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden peer"><label for="c6" class="flex flex-col items-center text-center p-3 border border-white/30 rounded-lg cursor-pointer transition-all peer-checked:border-slate-700 peer-checked:bg-white/70"><i data-lucide="square" class="mb-1"></i><span class="text-sm">Studio</span></label></div>
-                        </div>
+                </div>
+                <div class="card p-6">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800">1. Detail Produk</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="productName" placeholder="Nama Produk" class="form-control">
+                        <select id="productType" class="form-select">
+                            <option value="" disabled selected>Pilih Jenis Produk</option>
+                            <option value="hoodie">Hoodie</option><option value="t-shirt">Kaos</option><option value="jacket">Jaket</option><option value="pants">Celana</option><option value="hat">Topi</option><option value="shoes">Sepatu</option>
+                        </select>
+                        <input type="file" id="productImage" class="hidden"><label for="productImage" class="form-control text-center cursor-pointer hover:bg-gray-100"><span id="productImageName">Unggah Gambar Produk</span></label>
+                        <input type="file" id="faceImage" class="hidden"><label for="faceImage" class="form-control text-center cursor-pointer hover:bg-gray-100"><span id="faceImageName">Unggah Wajah (Opsional)</span></label>
                     </div>
-                     <input type="text" id="customBackground" placeholder="Atau ketik latar kustom di sini..." class="w-full p-3 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-slate-600 placeholder:text-gray-600">
                 </div>
-            </div>
-
-            <!-- Kolom Hasil (Kanan) -->
-            <div class="lg:col-span-1 bg-white/20 p-6 md:p-8 space-y-6 overflow-y-auto rounded-l-3xl">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-white">Kreasi Anda</h2>
-                    <div id="apiCreditCounter" class="text-sm font-semibold text-slate-800 bg-white/70 px-3 py-1 rounded-full"></div>
-                </div>
-                <p id="apiTimer" class="text-sm text-center text-indigo-100 -mt-4"></p>
-
-                <!-- PERBAIKAN FINAL: Tombol Generate dipindahkan ke sini -->
-                <button id="generateImageBtn" class="btn-primary flex items-center justify-center gap-2"><i data-lucide="sparkles"></i>Ciptakan Kreasi Anda!</button>
-                
-                <div id="imageResult" class="grid grid-cols-2 gap-4 min-h-[300px]">
-                    <div class="bg-black/10 rounded-xl flex items-center justify-center text-white/50 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
-                    <div class="bg-black/10 rounded-xl flex items-center justify-center text-white/50 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
-                    <div class="bg-black/10 rounded-xl flex items-center justify-center text-white/50 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
-                    <div class="bg-black/10 rounded-xl flex items-center justify-center text-white/50 aspect-[9/16]"><i data-lucide="image-off" class="w-10 h-10"></i></div>
-                </div>
-
-                <div id="textAudioSection" class="space-y-4 hidden fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button id="generateTextBtn" class="btn-tertiary flex items-center justify-center gap-2" disabled><i data-lucide="file-text"></i>Buat Konten Teks</button>
-                        <button id="resetBtn" class="btn-secondary flex items-center justify-center gap-2"><i data-lucide="rotate-cw"></i>Mulai Lagi</button>
-                    </div>
-                    <div class="glass-card p-4 rounded-xl space-y-4">
-                         <div class="relative">
-                            <label class="font-semibold text-slate-800">Deskripsi TikTok</label>
-                            <textarea id="tiktokCaption" rows="4" class="w-full p-2 mt-1 border rounded-lg bg-white/50 border-white/30 focus:outline-none" readonly></textarea>
-                            <button onclick="copyToClipboard('tiktokCaption')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-white/50 transition-colors"><i data-lucide="copy" class="h-4 w-4"></i></button>
-                        </div>
-                        <div class="relative">
-                            <label class="font-semibold text-slate-800">Narasi Video</label>
-                            <textarea id="promoNarrative" rows="5" class="w-full p-2 mt-1 border rounded-lg bg-white/50 border-white/30 focus:outline-none" readonly></textarea>
-                            <button onclick="copyToClipboard('promoNarrative')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-white/50 transition-colors"><i data-lucide="copy" class="h-4 w-4"></i></button>
+                <div class="card p-6">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800">2. Konsep Visual</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="font-medium text-sm">Model</label>
+                            <div class="grid grid-cols-2 gap-3 mt-2">
+                                <div><input type="radio" name="modelGender" value="Pria" id="m1" class="hidden peer" checked><label for="m1" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Pria</label></div>
+                                <div><input type="radio" name="modelGender" value="Wanita" id="m2" class="hidden peer"><label for="m2" class="block text-center p-2 border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Wanita</label></div>
+                            </div>
                         </div>
                         <div>
-                            <div id="audioLoader" class="hidden justify-center items-center py-4"><div class="loader" style="width:24px; height:24px; border-top-color: #4f46e5;"></div></div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button id="generateMaleAudioBtn" class="bg-blue-500 text-white font-bold p-2 text-sm rounded-lg flex items-center justify-center hover:bg-blue-600 transition-all gap-1"><i data-lucide="mic" class="h-4 w-4"></i>Suara Pria</button>
-                                <button id="generateFemaleAudioBtn" class="bg-pink-500 text-white font-bold p-2 text-sm rounded-lg flex items-center justify-center hover:bg-pink-600 transition-all gap-1"><i data-lucide="mic" class="h-4 w-4"></i>Suara Wanita</button>
+                            <label class="font-medium text-sm">Tema Foto</label>
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                <div><input type="radio" name="photoConcept" value="Golden Hour Glow" id="c1" class="hidden peer" checked><label for="c1" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Golden Hour</label></div>
+                                <div><input type="radio" name="photoConcept" value="Retro Analog Film" id="c2" class="hidden peer"><label for="c2" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Retro Film</label></div>
+                                <div><input type="radio" name="photoConcept" value="Cyberpunk Nightscape" id="c3" class="hidden peer"><label for="c3" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Cyberpunk</label></div>
+                                <div><input type="radio" name="photoConcept" value="Cozy Coffee Shop" id="c4" class="hidden peer"><label for="c4" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Coffee Shop</label></div>
+                                <div><input type="radio" name="photoConcept" value="Nature Explorer" id="c5" class="hidden peer"><label for="c5" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Alam</label></div>
+                                <div><input type="radio" name="photoConcept" value="Studio Minimalis" id="c6" class="hidden peer"><label for="c6" class="block text-center p-2 text-xs border rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50">Studio</label></div>
                             </div>
-                            <div id="maleAudioContainer" class="hidden mt-2"> <audio controls class="w-full"></audio> </div>
-                            <div id="femaleAudioContainer" class="hidden mt-2"> <audio controls class="w-full"></audio> </div>
+                        </div>
+                         <input type="text" id="customBackground" placeholder="Atau ketik latar kustom di sini..." class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kolom Hasil -->
+            <div class="lg:col-span-3 space-y-6">
+                 <div class="card">
+                    <div class="card-header text-lg">Hasil Foto (4 Opsi)</div>
+                    <div class="card-body">
+                        <div id="imageResult" class="grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[300px]">
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image" class="w-10 h-10"></i></div>
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image" class="w-10 h-10"></i></div>
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image" class="w-10 h-10"></i></div>
+                            <div class="bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 aspect-[9/16]"><i data-lucide="image" class="w-10 h-10"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="textAudioSection" class="card hidden fade-in">
+                    <div class="card-header text-lg">Hasil Konten Teks & Suara</div>
+                    <div class="card-body space-y-4">
+                        <div class="relative">
+                            <label class="font-semibold text-gray-700">Deskripsi TikTok</label>
+                            <textarea id="tiktokCaption" rows="4" class="form-control mt-1" readonly></textarea>
+                            <button onclick="copyToClipboard('tiktokCaption')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200 transition-colors"><i data-lucide="copy" class="h-4 w-4"></i></button>
+                        </div>
+                        <div class="relative">
+                            <label class="font-semibold text-gray-700">Narasi Video</label>
+                            <textarea id="promoNarrative" rows="5" class="form-control mt-1" readonly></textarea>
+                            <button onclick="copyToClipboard('promoNarrative')" class="absolute top-8 right-2 p-2 rounded-full hover:bg-gray-200 transition-colors"><i data-lucide="copy" class="h-4 w-4"></i></button>
+                        </div>
+                        <div>
+                            <div id="audioLoader" class="hidden justify-center items-center py-4"><div class="loader" style="width:24px; height:24px;"></div></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button id="generateMaleAudioBtn" class="btn bg-blue-500 text-white text-sm"><i data-lucide="mic" class="h-4 w-4"></i>Suara Pria</button>
+                                <button id="generateFemaleAudioBtn" class="btn bg-pink-500 text-white text-sm"><i data-lucide="mic" class="h-4 w-4"></i>Suara Wanita</button>
+                            </div>
+                            <div id="maleAudioContainer" class="hidden mt-2"> <audio controls class="w-full h-10"></audio> </div>
+                            <div id="femaleAudioContainer" class="hidden mt-2"> <audio controls class="w-full h-10"></audio> </div>
                         </div>
                     </div>
                 </div>
@@ -151,9 +139,7 @@
     lucide.createIcons();
     const getElement = (id) => document.getElementById(id);
     const elements = { buttons: { image: getElement('generateImageBtn'), text: getElement('generateTextBtn'), reset: getElement('resetBtn'), maleAudio: getElement('generateMaleAudioBtn'), femaleAudio: getElement('generateFemaleAudioBtn'), }, results: { image: getElement('imageResult'), textAudioSection: getElement('textAudioSection'), tiktokCaption: getElement('tiktokCaption'), promoNarrative: getElement('promoNarrative'), maleAudioContainer: getElement('maleAudioContainer'), femaleAudioContainer: getElement('femaleAudioContainer'), }, loaders: { audio: getElement('audioLoader'), }, inputs: { productName: getElement('productName'), productType: getElement('productType'), productImage: getElement('productImage'), faceImage: getElement('faceImage'), }, displays: { productImageName: getElement('productImageName'), faceImageName: getElement('faceImageName'), creditCounter: getElement('apiCreditCounter'), apiTimer: getElement('apiTimer'), } };
-    const RPM_LIMIT = 15;
-    let credits = RPM_LIMIT;
-    let timerInterval;
+    const RPM_LIMIT = 15; let credits = RPM_LIMIT; let timerInterval;
     function updateCreditDisplay() { elements.displays.creditCounter.textContent = `${credits}/${RPM_LIMIT}`; }
     function startApiTimer() { if (timerInterval) clearInterval(timerInterval); let timeLeft = 60; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; timerInterval = setInterval(() => { timeLeft--; elements.displays.apiTimer.textContent = `Reset dalam ${timeLeft}d...`; if (timeLeft <= 0) { clearInterval(timerInterval); credits = RPM_LIMIT; updateCreditDisplay(); elements.displays.apiTimer.textContent = ''; } }, 1000); }
     function useCredit() { if (credits === RPM_LIMIT) { startApiTimer(); } if (credits > 0) { credits--; updateCreditDisplay(); return true; } alert("Kuota per menit habis. Tunggu reset."); return false; }
@@ -171,7 +157,7 @@
         const { productName, productType, productImage } = elements.inputs;
         if (!productName.value || !productType.value || !productImage.files[0]) { alert("Harap isi Nama, Tipe, dan Gambar Produk."); return; }
         elements.buttons.image.disabled = true;
-        elements.results.image.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-full"><div class="loader" style="border-top-color: #4f46e5;"></div><p class="mt-2 text-white/70">AI sedang bekerja (bisa >30 detik)...</p></div>`;
+        elements.results.image.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-full"><div class="loader"></div><p class="mt-2 text-gray-500">AI sedang bekerja (bisa >30 detik)...</p></div>`;
         try {
             const productImageBase64 = await fileToBase64(productImage.files[0]);
             let faceImageBase64 = null;
@@ -190,8 +176,8 @@
                 lucide.createIcons();
                 elements.results.textAudioSection.classList.remove('hidden');
                 elements.buttons.text.disabled = false;
-            } else { elements.results.image.innerHTML = `<p class="col-span-full text-red-400">${result.error || 'Gagal membuat gambar.'}</p>`; elements.buttons.image.disabled = false; }
-        } catch (error) { elements.results.image.innerHTML = `<p class="col-span-full text-red-400 text-center p-4">${error.message}</p>`; elements.buttons.image.disabled = false; }
+            } else { elements.results.image.innerHTML = `<p class="col-span-full text-red-500">${result.error || 'Gagal membuat gambar.'}</p>`; elements.buttons.image.disabled = false; }
+        } catch (error) { elements.results.image.innerHTML = `<p class="col-span-full text-red-500 text-center p-4">${error.message}</p>`; elements.buttons.image.disabled = false; }
     });
     elements.buttons.text.addEventListener('click', async () => {
          if (!useCredit()) return;
