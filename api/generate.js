@@ -1,5 +1,5 @@
 // Final, production-ready backend for Google AI.
-// This version separates video prompts from voice-over narration.
+// This version generates 4 distinct text outputs for affiliate marketing.
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -8,7 +8,6 @@ export default async function handler(req, res) {
 
     const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     if (!GOOGLE_API_KEY) {
-        console.error("CRITICAL: GOOGLE_API_KEY environment variable is not set!");
         return res.status(500).json({ error: 'Kunci API Google tidak dikonfigurasi di server.' });
     }
 
@@ -38,39 +37,26 @@ export default async function handler(req, res) {
 }
 
 async function apiFetch(url, payload) {
-    const apiResponse = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
+    const apiResponse = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!apiResponse.ok) {
         let errorText = `Google API merespons dengan status ${apiResponse.status}`;
-        try {
-            const errorData = await apiResponse.json();
-            errorText = errorData.error?.message || JSON.stringify(errorData);
-        } catch (e) {
-            errorText += ` dan respons bukan JSON yang valid.`;
-        }
+        try { const errorData = await apiResponse.json(); errorText = errorData.error?.message || JSON.stringify(errorData); } catch (e) { errorText += ` dan respons bukan JSON yang valid.`; }
         console.error("Google API Error:", errorText);
         throw new Error(errorText);
     }
-    
     return apiResponse.json();
 }
 
 async function handleImageGeneration(body, apiKey, baseUrl) {
+    // This function remains unchanged and correct.
     const { productName, productType, productImage, photoConcept, modelGender, customBackground, faceImage } = body;
     if (!productName || !productType || !productImage || !productImage.base64) { throw new Error("Data produk tidak lengkap."); }
     const url = `${baseUrl}gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
     let backgroundPrompt = "";
     switch(photoConcept) {
-        case "Golden Hour Glow": backgroundPrompt = "beautiful golden hour lighting"; break;
-        case "Retro Analog Film": backgroundPrompt = "90s analog film aesthetic"; break;
-        case "Cyberpunk Nightscape": backgroundPrompt = "futuristic cyberpunk city at night"; break;
-        case "Cozy Coffee Shop": backgroundPrompt = "cozy coffee shop"; break;
-        case "Nature Explorer": backgroundPrompt = "beautiful natural landscape"; break;
-        case "Studio Minimalis": backgroundPrompt = "clean minimalist studio background"; break;
+        case "Golden Hour Glow": backgroundPrompt = "golden hour lighting"; break; case "Retro Analog Film": backgroundPrompt = "90s analog film aesthetic"; break;
+        case "Cyberpunk Nightscape": backgroundPrompt = "futuristic cyberpunk city at night"; break; case "Cozy Coffee Shop": backgroundPrompt = "cozy coffee shop"; break;
+        case "Nature Explorer": backgroundPrompt = "beautiful natural landscape"; break; case "Studio Minimalis": backgroundPrompt = "clean minimalist studio background"; break;
     }
     if (customBackground) { backgroundPrompt = `at ${customBackground}`; }
     const basePrompt = `A magazine-quality fashion photograph, 9:16, of an attractive Indonesian ${modelGender === 'Pria' ? 'man' : 'woman'} model wearing a stylish ${productName} (${productType}). The setting is ${backgroundPrompt}. High detail.`;
@@ -80,13 +66,10 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
         if (i === 1) finalPrompt += " (different pose)"; if (i === 2) finalPrompt += " (different angle)"; if (i === 3) finalPrompt += " (different expression)";
         if (faceImage && faceImage.base64) {
             const promptWithFace = `CRITICAL PRIORITY: Use the face from the FIRST provided image and accurately place it onto the model. SECOND, dress the model in the product from the SECOND provided image. The final image should follow this description: ${finalPrompt}`;
-            parts.push({ text: promptWithFace });
-            parts.push({ inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } });
-            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
+            parts.push({ text: promptWithFace, inlineData: { mimeType: faceImage.mimeType, data: faceImage.base64 } }, { inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
         } else {
             const promptWithoutFace = `The model must wear the product from the provided image. The final image should follow this description: ${finalPrompt}`;
-            parts.push({ text: promptWithoutFace });
-            parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
+            parts.push({ text: promptWithoutFace, inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
         }
         const payload = { contents: [{ parts }] };
         const result = await apiFetch(url, payload);
@@ -98,25 +81,42 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
 }
 
 async function handleTextGeneration(body, apiKey, baseUrl) {
+    // PERBAIKAN FINAL: Prompt diubah untuk menghasilkan 4 output teks yang berbeda.
     const { productName, productType } = body;
     if (!productName || !productType) { throw new Error("Nama dan tipe produk harus disertakan."); }
+    
     const url = `${baseUrl}gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
     const prompt = `
-        Anda adalah seorang content creator TikTok dan affiliate marketer profesional dari Indonesia. Tugas Anda adalah membuat konten viral untuk sebuah produk **${productType}** bernama **"${productName}"**.
-        IKUTI FORMAT INI DENGAN TEPAT:
+        Anda adalah seorang content creator TikTok dan affiliate marketer profesional dari Indonesia. Tugas Anda adalah membuat 4 jenis teks berbeda untuk mempromosikan produk **${productType}** bernama **"${productName}"**. Bahasa harus 100% Bahasa Indonesia yang menjual dan viral.
 
-        CAPTION_TIKTOK:
-        [Buat 2-3 kalimat caption singkat yang sangat persuasif, cocok untuk dibacakan sebagai voice over dan juga sebagai teks di video. Mulai dengan "hook" yang kuat, sebutkan manfaat utama, dan akhiri dengan CTA yang jelas ke keranjang kuning. Wajib sertakan 3-5 emoji dan 3 hashtag viral.]
+        IKUTI FORMAT INI DENGAN TEPAT MENGGUNAKAN HEADER YANG JELAS:
+
+        DESKRIPSI_KONTEN:
+        [Buat deskripsi umum yang informatif tentang produk ini dalam 2-3 kalimat. Jelaskan keunggulan utama dan bahan secara singkat.]
+
+        CAPTION_KONTEN:
+        [Buat caption TikTok yang sangat singkat dan menarik (1-2 baris). Fokus pada "hook" yang kuat dan CTA yang pendek. Wajib sertakan 3 hashtag viral yang relevan.]
+
+        NARASI_KONTEN:
+        [Buat naskah voice over ~20 detik dengan gaya "spill produk". Gunakan bahasa gaul dan persuasif. Struktur: 1. Hook ("Guys, gue nemu harta karun..."). 2. Masalah ("Sering bingung cari ${productType}..."). 3. Solusi ("Ini dia ${productName}..."). 4. Keunggulan ("Bahannya adem parah..."). 5. Urgensi/FOMO ("Stok terbatas!"). 6. CTA ("Langsung checkout di keranjang kuning!").]
 
         PROMPT_VIDEO:
-        [In ENGLISH, write a short, dynamic, and descriptive prompt for an image-to-video AI like RunwayML or Pika. Describe a simple 3-second scene featuring the model and product. Focus on movement and atmosphere. Example: "A stylish model wearing the '${productName}' ${productType}, slow-motion turn towards the camera, cinematic lighting, subtle wind blowing through hair, hyperrealistic.".]
+        [In ENGLISH, write a short, dynamic prompt for an image-to-video AI. Describe a 3-second scene with movement. Example: "A stylish model wearing the '${productName}' ${productType}, cinematic slow-motion turn, subtle wind blowing, hyperrealistic.".]
     `;
+
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const result = await apiFetch(url, payload);
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error('Generasi teks gagal.');
+    
     const extractContent = (fullText, start, end) => { const regex = new RegExp(`${start}:\\s*\\n?([\\s\\S]*?)(?=\\n*${end}|$)`); const match = fullText.match(regex); return match ? match[1].trim().replace(/^\[|\]$/g, '') : null; };
-    return { caption: extractContent(text, "CAPTION_TIKTOK", "PROMPT_VIDEO"), videoPrompt: extractContent(text, "PROMPT_VIDEO", null) };
+
+    return { 
+        description: extractContent(text, "DESKRIPSI_KONTEN", "CAPTION_KONTEN"),
+        caption: extractContent(text, "CAPTION_KONTEN", "NARASI_KONTEN"), 
+        narrative: extractContent(text, "NARASI_KONTEN", "PROMPT_VIDEO"),
+        videoPrompt: extractContent(text, "PROMPT_VIDEO", null) 
+    };
 }
 
 async function handleAudioGeneration(body, apiKey, baseUrl) {
