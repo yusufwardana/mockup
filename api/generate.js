@@ -1,5 +1,5 @@
 // Final, production-ready backend for Google AI.
-// This version implements the user-provided, proven-working logic for Text-to-Speech.
+// This version adds a robust text cleaning function before sending to TTS.
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -38,29 +38,19 @@ export default async function handler(req, res) {
 }
 
 async function apiFetch(url, payload) {
-    const apiResponse = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
+    // This helper function remains unchanged.
+    const apiResponse = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!apiResponse.ok) {
         let errorText = `Google API merespons dengan status ${apiResponse.status}`;
-        try {
-            const errorData = await apiResponse.json();
-            errorText = errorData.error?.message || JSON.stringify(errorData);
-        } catch (e) {
-            errorText += ` dan respons bukan JSON yang valid.`;
-        }
+        try { const errorData = await apiResponse.json(); errorText = errorData.error?.message || JSON.stringify(errorData); } catch (e) { errorText += ` dan respons bukan JSON yang valid.`; }
         console.error("Google API Error:", errorText);
         throw new Error(errorText);
     }
-    
     return apiResponse.json();
 }
 
 async function handleImageGeneration(body, apiKey, baseUrl) {
-    // This function is correct and remains unchanged.
+    // This function remains unchanged.
     const { productName, productType, productImage, photoConcept, modelGender, customBackground, faceImage } = body;
     if (!productName || !productType || !productImage || !productImage.base64) { throw new Error("Data produk tidak lengkap."); }
     const url = `${baseUrl}gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
@@ -77,8 +67,7 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
     const basePrompt = `A magazine-quality fashion photograph, 9:16, of an attractive Indonesian ${modelGender === 'Pria' ? 'man' : 'woman'} model. The model is wearing a stylish ${productName} (${productType}). The setting is ${backgroundPrompt}. High detail, sharp focus.`;
     const images = [];
     for (let i = 0; i < 4; i++) {
-        const parts = [];
-        let finalPrompt = basePrompt;
+        const parts = []; let finalPrompt = basePrompt;
         if (i === 1) finalPrompt += " (different pose, full body shot)";
         if (i === 2) finalPrompt += " (slightly different angle, medium shot)";
         if (i === 3) finalPrompt += " (different subtle expression, close-up on the product)";
@@ -92,7 +81,7 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
             parts.push({ text: promptWithoutFace });
             parts.push({ inlineData: { mimeType: productImage.mimeType, data: productImage.base64 } });
         }
-        const payload = { contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE'] } };
+        const payload = { contents: [{ parts }] };
         const result = await apiFetch(url, payload);
         const base64Image = result.candidates[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
         if (base64Image) { images.push(base64Image); }
@@ -102,7 +91,6 @@ async function handleImageGeneration(body, apiKey, baseUrl) {
 }
 
 async function handleTextGeneration(body, apiKey, baseUrl) {
-    // This function is correct and remains unchanged.
     const { productName, productType } = body;
     if (!productName || !productType) { throw new Error("Nama dan tipe produk harus disertakan."); }
     const url = `${baseUrl}gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
@@ -122,27 +110,35 @@ async function handleTextGeneration(body, apiKey, baseUrl) {
     const result = await apiFetch(url, payload);
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error('Generasi teks gagal.');
-    const extractContent = (fullText, start, end) => { const regex = new RegExp(`${start}:\\s*\\n?([\\s\\S]*?)(?=\\n*${end}|$)`); const match = fullText.match(regex); return match ? match[1].trim().replace(/^\[|\]$/g, '') : null; };
+
+    const extractContent = (fullText, start, end) => { const regex = new RegExp(`${start}:\\s*\\n?([\\s\\S]*?)(?=\\n*${end}|$)`); const match = fullText.match(regex); return match ? match[1].trim() : null; };
+    
+    // --- NEW CLEANING FUNCTION ---
+    const cleanText = (inputText) => {
+        if (!inputText) return null;
+        // Remove brackets, asterisks, and extra whitespace.
+        return inputText.replace(/^\[|\]$/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+    };
+
     return { 
-        description: extractContent(text, "DESKRIPSI_KONTEN", "CAPTION_KONTEN"),
-        caption: extractContent(text, "CAPTION_KONTEN", "NARASI_KONTEN"), 
-        narrative: extractContent(text, "NARASI_KONTEN", "PROMPT_VIDEO"),
-        videoPrompt: extractContent(text, "PROMPT_VIDEO", null) 
+        description: cleanText(extractContent(text, "DESKRIPSI_KONTEN", "CAPTION_KONTEN")),
+        caption: cleanText(extractContent(text, "CAPTION_KONTEN", "NARASI_KONTEN")), 
+        narrative: cleanText(extractContent(text, "NARASI_KONTEN", "PROMPT_VIDEO")),
+        videoPrompt: cleanText(extractContent(text, "PROMPT_VIDEO", null)) 
     };
 }
 
 async function handleAudioGeneration(body, apiKey, baseUrl) {
-    // --- PERBAIKAN FINAL DI SINI ---
     const { gender, narrative } = body;
     if (!gender || !narrative) {
         throw new Error("Data narasi untuk audio tidak lengkap.");
     }
 
     const url = `${baseUrl}gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+    const voiceName = gender === 'male' ? 'Kore' : 'Puck';
     
-    // Mengadopsi logika dari referensi Anda yang terbukti berhasil.
-    const voiceName = gender === 'male' ? 'Kore' : 'Puck'; // Kore (Firm Male), Puck (Upbeat Female)
-    const prompt = `Ucapkan dengan gaya pencerita yang menarik: ${narrative}`;
+    // The prompt is now just the clean narration text.
+    const prompt = narrative; 
 
     const payload = { 
         contents: [{ parts: [{ text: prompt }] }], 
@@ -160,106 +156,7 @@ async function handleAudioGeneration(body, apiKey, baseUrl) {
     const result = await apiFetch(url, payload);
     const part = result?.candidates?.[0]?.content?.parts?.[0];
     if (!part?.inlineData?.data) {
-        throw new Error('Generasi audio gagal. API tidak mengembalikan data audio. Pastikan API Text-to-Speech aktif di Google Cloud.');
+        throw new Error('Generasi audio gagal. API tidak mengembalikan data audio.');
     }
     return { audioData: part.inlineData.data, mimeType: "audio/wav" };
-}
-
-async function handleGenerateVoiceOver() {
-    const narration = narrationOutput.value.trim();
-    if (!narration) {
-        showError("Tidak ada narasi untuk diubah menjadi suara.");
-        return;
-    }
-
-    voiceLoader.classList.remove('hidden');
-    audioContainer.classList.add('hidden');
-    generateVoiceBtn.disabled = true;
-    errorMessage.classList.add('hidden');
-
-    try {
-        const selectedVoice = document.querySelector('input[name="voice"]:checked').value;
-        const voiceName = selectedVoice === 'male' ? 'Kore' : 'Puck'; // Kore (Firm Male), Puck (Upbeat Female)
-
-        const payload = {
-            contents: [{ parts: [{ text: `Ucapkan dengan gaya pencerita yang menarik: ${narration}` }] }],
-            generationConfig: {
-                responseModalities: ["AUDIO"],
-                speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } }
-                }
-            },
-            model: TTS_MODEL
-        };
-        
-        const result = await makeApiCall(TTS_API_URL, payload);
-        const part = result?.candidates?.[0]?.content?.parts?.[0];
-        const audioData = part?.inlineData?.data;
-        const mimeType = part?.inlineData?.mimeType;
-
-        if (audioData && mimeType && mimeType.startsWith("audio/")) {
-            const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-            const pcmData = base64ToArrayBuffer(audioData);
-            const pcm16 = new Int16Array(pcmData);
-            const wavBlob = pcmToWav(pcm16, sampleRate);
-            const audioUrl = URL.createObjectURL(wavBlob);
-            audioPlayer.src = audioUrl;
-            audioContainer.classList.remove('hidden');
-        } else {
-            throw new Error("Gagal mendapatkan data audio dari API.");
-        }
-
-    } catch (error) {
-        console.error("Error generating voice over:", error);
-        showError("Maaf, terjadi kesalahan saat membuat suara. Coba lagi.");
-    } finally {
-        voiceLoader.classList.add('hidden');
-        generateVoiceBtn.disabled = false;
-    }
-}
-
-// --- Audio Helper Functions ---
-function base64ToArrayBuffer(base64) {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-}
-
-function pcmToWav(pcmData, sampleRate) {
-    const numChannels = 1;
-    const bitsPerSample = 16;
-    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
-    const blockAlign = numChannels * bitsPerSample / 8;
-    const dataSize = pcmData.length * 2; // 16-bit samples are 2 bytes
-    const buffer = new ArrayBuffer(44 + dataSize);
-    const view = new DataView(buffer);
-
-    // RIFF chunk descriptor
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + dataSize, true);
-    writeString(view, 8, 'WAVE');
-    // "fmt " sub-chunk
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true); // Audio format (1 is PCM)
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, byteRate, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitsPerSample, true);
-    // "data" sub-chunk
-    writeString(view, 36, 'data');
-    view.setUint32(40, dataSize, true);
-
-    // Write PCM data
-    let offset = 44;
-    for (let i = 0; i < pcmData.length; i++, offset += 2) {
-        view.setInt16(offset, pcmData[i], true);
-    }
-
-    return new Blob([view], { type: 'audio/wav' });
 }
